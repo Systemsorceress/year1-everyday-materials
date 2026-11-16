@@ -1,0 +1,1736 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Everyday Materials Adventure</title>
+<meta name="description" content="Year 1 Science – Everyday Materials. An interactive, gamified science adventure for 6–7 year olds.">
+<!-- Optional font. If offline, the lesson falls back to system fonts automatically. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* =========================================================
+   THEME TOKENS
+   ========================================================= */
+:root{
+  --ink:#2b2350; --muted:#6b6590; --bg:#eef7ff; --card:#ffffff; --line:#e3e0f5;
+  --primary:#6c4cf5; --primary-d:#5536d8; --orange:#ff8a3d; --yellow:#ffd23f;
+  --green:#1fa968; --green-bg:#e3f9ee; --try:#f08a24; --try-bg:#fff1e3;
+  --blue:#3fa9f5; --pink:#ff5fa2; --radius:22px;
+  --shadow:0 8px 24px rgba(60,40,140,.12); --shadow-s:0 4px 12px rgba(60,40,140,.10);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:'Fredoka','Trebuchet MS','Segoe UI',system-ui,sans-serif;
+  color:var(--ink); background:var(--bg); font-size:20px; line-height:1.4; min-height:100vh;
+  background-image:
+    radial-gradient(circle at 8% 22%, #fff3c4 0 110px, transparent 111px),
+    radial-gradient(circle at 94% 78%, #e4dbff 0 150px, transparent 151px),
+    radial-gradient(circle at 70% 8%, #d6f5e6 0 70px, transparent 71px);
+  background-attachment:fixed;
+}
+button{font:inherit;color:inherit;cursor:pointer}
+input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3{margin:0;line-height:1.15}
+p{margin:.4em 0}
+.hidden{display:none!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.ico{width:100%;height:100%;display:block;overflow:visible}
+.ico-s{display:block;flex:0 0 auto}
+.ico-s > .matc{width:100%;height:100%;border-radius:30%;border-width:2px}
+.title:focus{outline:none}
+
+/* =========================================================
+   HUD (top bar) + NAV (bottom bar)
+   ========================================================= */
+.hud{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;padding:10px 16px;
+  background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:3px solid var(--line)}
+.brand{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.brand-m{width:44px;height:50px}
+.brand-t{font-weight:700;font-size:17px;line-height:1.1;color:var(--primary)}
+.brand-t small{display:block;color:var(--muted);font-weight:500;font-size:13px}
+.prog{flex:1;min-width:80px}
+.prog-bar{position:relative;height:16px;background:#ece9fb;border-radius:20px;overflow:visible}
+.prog-bar i{position:absolute;left:0;top:0;bottom:0;border-radius:20px;background:linear-gradient(90deg,var(--yellow),var(--orange),var(--pink),var(--primary));transition:width .6s ease}
+.prog-bar span{position:absolute;top:50%;transform:translate(-50%,-55%);font-size:24px;transition:left .6s ease;filter:drop-shadow(0 2px 2px rgba(0,0,0,.15))}
+.prog small{display:block;color:var(--muted);font-size:13px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hud-btns{display:flex;gap:6px;align-items:center}
+.hud-chip{border:0;background:#fff7d6;border-radius:30px;padding:6px 12px;font-weight:700;font-size:18px;box-shadow:var(--shadow-s)}
+.icon-btn{border:0;background:#f1eefe;border-radius:50%;width:40px;height:40px;font-size:18px;display:grid;place-items:center}
+.icon-btn[aria-pressed="false"]{opacity:.45}
+.hud-chip.bump{animation:bump .5s}
+@keyframes bump{40%{transform:scale(1.25)}}
+
+main{max-width:1000px;margin:0 auto;padding:16px 16px 120px}
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:rgba(255,255,255,.95);border-top:3px solid var(--line)}
+.dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.dot{width:40px;height:40px;border-radius:50%;border:3px solid var(--line);background:#fff;font-size:18px;display:grid;place-items:center;padding:0}
+.dot.cur{border-color:var(--primary);background:#efeaff;transform:scale(1.1)}
+.dot.done{border-color:var(--green);background:var(--green-bg)}
+.dot:disabled{opacity:.35;cursor:not-allowed;filter:grayscale(1)}
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+.btn{border:0;border-radius:18px;padding:12px 22px;font-weight:600;font-size:20px;background:#fff;box-shadow:0 4px 0 #d9d4f2;transition:transform .1s, box-shadow .1s;min-height:52px}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #d9d4f2}
+.btn.primary{background:var(--primary);color:#fff;box-shadow:0 5px 0 var(--primary-d)}
+.btn.green{background:var(--green);color:#fff;box-shadow:0 5px 0 #138552}
+.btn.orange{background:var(--orange);color:#fff;box-shadow:0 5px 0 #d96a20}
+.btn.ghost{background:#f1eefe;box-shadow:0 4px 0 #dcd5fb}
+.btn.big{font-size:24px;padding:16px 30px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.locked{background:#cfc9ea;box-shadow:0 5px 0 #b3abd8}
+.btn.pulse{animation:pulse 1.2s ease-in-out 4}
+@keyframes pulse{50%{transform:scale(1.08);box-shadow:0 5px 0 var(--primary-d),0 0 0 10px rgba(108,76,245,.18)}}
+.row-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin:16px 0}
+
+/* =========================================================
+   STEP LAYOUT
+   ========================================================= */
+.step{background:var(--card);border-radius:30px;box-shadow:var(--shadow);padding:22px 22px 26px;animation:stepIn .45s ease;border:3px solid #fff}
+@keyframes stepIn{from{opacity:0;transform:translateY(16px)}}
+.step-top{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.pill{display:inline-flex;align-items:center;gap:6px;background:var(--c,#6c4cf5);color:#fff;font-weight:600;font-size:15px;padding:4px 12px;border-radius:30px}
+.pill.soft{background:#f1eefe;color:var(--primary)}
+.title{font-size:clamp(28px,5vw,40px);color:var(--ink);margin:4px 0 12px}
+.guide{display:flex;gap:12px;align-items:flex-end;margin:6px 0 18px}
+.g-mascot{width:74px;height:86px;flex:0 0 auto;animation:bob 3s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-5px)}}
+.bubble{position:relative;background:#f4f1ff;border:3px solid #e1dafc;border-radius:22px 22px 22px 6px;padding:12px 54px 12px 16px;font-size:21px;flex:1}
+.bubble .read{position:absolute;right:8px;top:8px;border:0;background:#fff;border-radius:50%;width:38px;height:38px;font-size:18px;box-shadow:var(--shadow-s)}
+.body{display:block}
+.center{text-align:center}
+.inst{font-size:19px;color:var(--muted);text-align:center;margin:6px 0 14px}
+.card{background:#fff;border:3px solid var(--line);border-radius:var(--radius);padding:16px}
+.soft-card{background:#f8f6ff;border-radius:var(--radius);padding:16px}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(var(--min,150px),1fr))}
+.hero-pic{width:min(240px,60vw);height:min(240px,60vw);margin:0 auto 10px;padding:14px;background:radial-gradient(circle,#fffbe6 0 60%,transparent 61%);}
+.hero-pic.sm{width:150px;height:150px}
+.big-say{font-size:clamp(22px,4vw,30px);text-align:center;font-weight:500;margin:10px 0}
+.tag{display:inline-block;padding:0 10px;border-radius:10px;color:#fff}
+.tag.obj{background:var(--orange)} .tag.mat{background:var(--green)}
+.note{background:#fffbe6;border:3px dashed #ffd76a;border-radius:18px;padding:12px 16px;margin:14px 0;font-size:19px}
+.safety{background:#fff0f0;border:3px solid #ffc2c2;border-radius:18px;padding:12px 16px;margin:12px 0;font-size:18px}
+.pop-in{animation:popIn .5s cubic-bezier(.2,1.6,.4,1)}
+@keyframes popIn{from{transform:scale(.3);opacity:0}}
+.shake{animation:shake .45s}
+@keyframes shake{20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+.wiggle{animation:wiggle 1.6s ease-in-out infinite}
+@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-4deg)}75%{transform:rotate(4deg)}}
+
+/* Teacher's help */
+.teach{margin-top:22px;border:2px dashed #cfc7f3;border-radius:18px;background:#fbfaff;font-size:17px}
+.teach summary{cursor:pointer;padding:10px 16px;font-weight:600;color:var(--primary);list-style:none}
+.teach summary::-webkit-details-marker{display:none}
+.teach summary::before{content:'▸ ';}
+.teach[open] summary::before{content:'▾ ';}
+.teach .tb{padding:0 16px 14px}
+.teach dt{font-weight:700;margin-top:8px}
+.teach dd{margin:2px 0 0 0}
+
+/* =========================================================
+   MATERIAL CHARACTERS + SWATCHES
+   ========================================================= */
+.matc{display:inline-grid;place-items:center;width:72px;height:72px;border-radius:24px;border:3px solid #3d3040;position:relative;box-shadow:inset -6px -8px 0 rgba(0,0,0,.08);flex:0 0 auto;vertical-align:middle}
+.matc.sm{width:42px;height:42px;border-radius:14px;border-width:2px;box-shadow:inset -3px -4px 0 rgba(0,0,0,.08)}
+.matc.lg{width:112px;height:112px;border-radius:36px}
+.matc .face{position:relative;width:58%;height:38%}
+.matc .face i{position:absolute;top:0;width:20%;aspect-ratio:1;background:#3d3040;border-radius:50%}
+.matc .face i:first-child{left:12%} .matc .face i:nth-child(2){right:12%}
+.matc .face b{position:absolute;left:30%;right:30%;bottom:0;height:42%;border:3px solid #3d3040;border-top:0;border-radius:0 0 40px 40px}
+.matc.sm .face b{border-width:2px}
+.sw-wood{background:repeating-linear-gradient(100deg,#c98a4b 0 7px,#b8763a 7px 10px,#d39a5c 10px 17px)}
+.sw-plastic{background:radial-gradient(circle at 28% 25%,rgba(255,255,255,.75) 0 12%,transparent 13%),linear-gradient(135deg,#ff6b6b,#ff9f43)}
+.sw-metal{background:linear-gradient(135deg,#eef1f5,#9aa6b2 42%,#f7f8fa 52%,#8b96a3)}
+.sw-glass{background:linear-gradient(125deg,rgba(255,255,255,.9) 0 16%,rgba(185,228,255,.75) 16% 34%,rgba(255,255,255,.85) 34% 40%,rgba(165,215,248,.7) 40%)}
+.sw-fabric{background:repeating-linear-gradient(90deg,rgba(255,255,255,.22) 0 4px,transparent 4px 8px),repeating-linear-gradient(0deg,#6c7cf5 0 4px,#8a97ff 4px 8px)}
+.sw-rock{background:radial-gradient(circle at 22% 30%,#74777d 0 5%,transparent 6%),radial-gradient(circle at 70% 62%,#b8bbc0 0 9%,transparent 10%),radial-gradient(circle at 42% 80%,#7d8086 0 4%,transparent 5%),radial-gradient(circle at 80% 22%,#85888e 0 5%,transparent 6%),#9b9ea3}
+.sw-sponge{background:radial-gradient(circle at 30% 30%,#e8b800 0 6%,transparent 7%),radial-gradient(circle at 70% 55%,#e8b800 0 7%,transparent 8%),radial-gradient(circle at 40% 75%,#e8b800 0 5%,transparent 6%),#ffd23f}
+.sw-rubber{background:radial-gradient(circle at 28% 25%,rgba(255,255,255,.4) 0 10%,transparent 11%),#e0892c}
+.sw-paper{background:repeating-linear-gradient(0deg,#fff 0 10px,#dbe9ff 10px 12px)}
+.sw-card{background:repeating-linear-gradient(90deg,#d6a46a 0 9px,#c99357 9px 11px)}
+
+/* =========================================================
+   WELCOME
+   ========================================================= */
+.welcome{text-align:center;padding:10px 0}
+.welcome .w-mascot{width:150px;height:175px;margin:0 auto;animation:bob 3s ease-in-out infinite}
+.welcome h1{font-size:clamp(32px,6vw,52px);color:var(--primary);margin:8px 0}
+.welcome .sub{font-size:22px;color:var(--muted)}
+.lab-shelf{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:18px 0}
+.lab-shelf .matc{animation:bob 2.6s ease-in-out infinite}
+.lab-shelf .matc:nth-child(2n){animation-delay:.4s}.lab-shelf .matc:nth-child(3n){animation-delay:.8s}
+.name-box{display:flex;flex-direction:column;align-items:center;gap:8px;margin:16px 0}
+.name-box input{font-size:24px;padding:12px 18px;border-radius:18px;border:3px solid var(--line);text-align:center;width:min(340px,100%)}
+.name-box input:focus{outline:none;border-color:var(--primary)}
+.map{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:18px 0}
+.map div{background:#f8f6ff;border-radius:18px;padding:10px;font-size:16px}
+.map b{display:block;font-size:28px}
+
+/* =========================================================
+   MULTIPLE CHOICE
+   ========================================================= */
+.q{font-size:24px;font-weight:600;text-align:center;margin:8px 0 12px}
+.opts{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.opt{border:4px solid var(--line);background:#fff;border-radius:22px;padding:12px;display:flex;flex-direction:column;align-items:center;gap:8px;font-size:21px;font-weight:600;box-shadow:0 5px 0 #e6e2f7;transition:transform .12s}
+.opt:hover:not(:disabled){transform:translateY(-3px);border-color:#c9bdf9}
+.opt-pic{width:84px;height:84px;display:grid;place-items:center}
+.opt-pic .matc{width:72px;height:72px}
+.opt.right{border-color:var(--green);background:var(--green-bg);animation:popIn .4s}
+.opt.wrong{border-color:var(--try);background:var(--try-bg);animation:shake .45s}
+.opt:disabled{cursor:default}
+.opt.wrong:disabled{opacity:.7}
+.fb{min-height:10px;margin:14px 0 0;border-radius:18px;font-size:20px;text-align:center}
+.fb.good{background:var(--green-bg);border:3px solid #9fe3c1;padding:12px 16px}
+.fb.try{background:var(--try-bg);border:3px solid #ffd0a1;padding:12px 16px}
+.fb b{display:block;font-size:22px}
+
+/* =========================================================
+   PART 1
+   ========================================================= */
+.mag-wrap{position:relative}
+.mag{position:absolute;right:-6%;top:-4%;width:46%;aspect-ratio:1;border-radius:50%;border:8px solid var(--primary);box-shadow:0 6px 16px rgba(0,0,0,.2);display:grid;place-items:center;animation:popIn .5s}
+.mag::after{content:'';position:absolute;width:40%;height:12px;background:var(--primary);border-radius:6px;right:-34%;bottom:2%;transform:rotate(45deg)}
+.mag-lens{position:absolute;inset:0;border-radius:50%}
+.mag span{position:relative;background:#fff;border-radius:10px;padding:0 8px;font-weight:700;font-size:18px}
+.split{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;align-items:center}
+.defs{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:16px}
+.def{border-radius:24px;padding:16px;text-align:center}
+.def.obj{background:#fff1e3;border:4px solid #ffc999}
+.def.mat{background:#e3f9ee;border:4px solid #9fe3c1}
+.def h3{font-size:30px;letter-spacing:1px}
+.def.obj h3{color:#e0661a}.def.mat h3{color:#13804d}
+.def .row{display:flex;justify-content:center;gap:10px;margin-top:8px}
+.def .row .ico-s{width:60px;height:60px}
+.eq{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;font-size:22px;font-weight:600;margin:16px 0}
+.eq .ico-s{width:80px;height:80px}
+.flip{position:relative;width:100%;aspect-ratio:1/1.08;border:0;background:none;perspective:900px;padding:0}
+.flip .in{position:absolute;inset:0;transition:transform .7s cubic-bezier(.3,1.4,.5,1);transform-style:preserve-3d}
+.flip.on .in{transform:rotateY(180deg)}
+.flip .sa,.flip .sb{position:absolute;inset:0;-webkit-backface-visibility:hidden;backface-visibility:hidden;border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:0 5px 0 #e6e2f7;border:4px solid var(--line);background:#fff;padding:8px}
+.flip .sb{transform:rotateY(180deg);background:#effcf5;border-color:#9fe3c1}
+.flip .ic-w{width:62%;aspect-ratio:1}
+.flip b{font-size:21px}.flip small{font-size:14px;color:var(--muted)}
+.counter{text-align:center;font-weight:600;color:var(--primary);margin:12px 0;font-size:20px}
+.chair-big{width:min(300px,75vw);display:block;margin:0 auto}
+.hot{cursor:pointer;outline:none}
+.hot:not(.found){animation:glow 1.6s ease-in-out infinite}
+@keyframes glow{50%{filter:drop-shadow(0 0 6px #ffd23f) drop-shadow(0 0 10px #ffd23f)}}
+.hot.found{filter:drop-shadow(0 0 4px #1fa968)}
+.hot:focus-visible{filter:drop-shadow(0 0 6px var(--primary))}
+.found-list{list-style:none;padding:0;margin:12px 0;display:grid;gap:8px}
+.found-list li{display:flex;align-items:center;gap:10px;background:#f8f6ff;border-radius:16px;padding:8px 12px;font-size:20px;animation:popIn .4s}
+.check-q{max-width:720px;margin:0 auto}
+.qnum{text-align:center;color:var(--muted);font-weight:600}
+
+/* =========================================================
+   PART 2
+   ========================================================= */
+.mat-dash{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.mat-btn{position:relative;border:4px solid var(--line);background:#fff;border-radius:26px;padding:16px 8px;display:flex;flex-direction:column;align-items:center;gap:8px;font-size:22px;font-weight:700;box-shadow:0 6px 0 #e6e2f7;transition:transform .15s}
+.mat-btn:hover{transform:translateY(-4px) rotate(-1deg)}
+.mat-btn.seen{border-color:#9fe3c1;background:#f3fdf8}
+.mat-btn .tick{position:absolute;top:8px;right:10px;background:var(--green);color:#fff;border-radius:50%;width:30px;height:30px;font-size:17px;display:grid;place-items:center}
+.flasks{display:flex;justify-content:center;gap:8px;margin:14px 0;font-size:28px}
+.flasks span{opacity:.25;filter:grayscale(1);transition:all .4s}
+.flasks span.on{opacity:1;filter:none;transform:scale(1.15)}
+.m-head{display:flex;align-items:center;gap:16px;margin-bottom:10px}
+.m-head h2{font-size:38px}
+.m-sec{margin:14px 0}
+.m-sec h3{font-size:20px;color:var(--primary);margin-bottom:6px}
+.from{display:flex;align-items:center;gap:14px;background:#f8f6ff;border-radius:18px;padding:10px 14px}
+.from .ico-s{width:70px;height:70px;flex:0 0 auto}
+.ex-grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(96px,1fr))}
+.ex{background:#fff;border:3px solid var(--line);border-radius:18px;padding:8px;text-align:center;font-size:16px;font-weight:600}
+.ex .ico-s{width:64px;height:64px;margin:0 auto 4px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{background:#fff7d6;border:2px solid #ffe08a;border-radius:30px;padding:4px 14px;font-size:18px;font-weight:500}
+.fact{background:linear-gradient(135deg,#fff7d6,#ffe9f3);border-radius:18px;padding:12px 16px;font-size:20px}
+.nat{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:16px}
+.nat .soft-card h3{margin-bottom:8px}
+.nat .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.nat .lab{display:flex;flex-direction:column;align-items:center;font-size:15px;font-weight:600}
+.match{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:760px;margin:0 auto}
+.match .col{display:grid;gap:10px}
+.mitem{border:4px solid var(--line);background:#fff;border-radius:20px;padding:8px 12px;display:flex;align-items:center;gap:10px;font-size:19px;font-weight:600;min-height:72px;box-shadow:0 4px 0 #e6e2f7;text-align:left;touch-action:none}
+.mitem .ico-s{width:52px;height:52px;flex:0 0 auto}
+.mitem.sel{border-color:var(--primary);background:#efeaff;transform:scale(1.03)}
+.mitem.done{border-color:#9fe3c1;background:#f3fdf8;cursor:default}
+.mitem.done::after{content:'✓';margin-left:auto;color:var(--green);font-size:24px}
+.mitem.drop-hover{border-color:var(--orange);background:#fff4ea}
+
+/* =========================================================
+   PART 3 – PROPERTIES & DEMOS
+   ========================================================= */
+.prop-hero{text-align:center;background:var(--c);color:#fff;border-radius:26px;padding:16px;margin-bottom:14px}
+.prop-hero .pe{font-size:56px;display:block;line-height:1}
+.prop-hero h2{font-size:clamp(34px,7vw,56px);letter-spacing:2px;text-shadow:0 3px 0 rgba(0,0,0,.15)}
+.prop-hero .def{font-size:22px;margin-top:6px;background:rgba(255,255,255,.18);border-radius:16px;padding:8px 12px;display:inline-block}
+.ex-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:6px 0 14px}
+.ex-row .ex{width:116px}
+.demo-box{background:#f8f6ff;border-radius:24px;padding:14px;margin:12px 0}
+.predict{text-align:center;font-weight:600;font-size:20px;margin:0 0 10px}
+.dgrid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.dcell{position:relative;background:#fff;border-radius:18px;padding:40px 10px 10px;text-align:center;min-height:210px;overflow:hidden;border:3px solid var(--line)}
+.dcell .obj{width:104px;height:104px;margin:0 auto;transform-origin:50% 100%;position:relative;z-index:2}
+.dcell b{display:block;font-size:19px}
+.dcell .res{font-size:17px;font-weight:600;color:var(--green);min-height:24px;margin:4px 0 0}
+.dcell .finger{position:absolute;left:50%;top:-4px;font-size:40px;transform:translateX(-50%);opacity:0;z-index:3}
+.go .finger{animation:press 1.4s ease}
+@keyframes press{0%{opacity:0;transform:translate(-50%,-20px)}20%{opacity:1}50%{opacity:1;transform:translate(-50%,34px)}80%{opacity:1;transform:translate(-50%,-6px)}100%{opacity:0}}
+.go .obj.squish{animation:squish 1.4s ease}
+@keyframes squish{0%,32%{transform:none}50%{transform:scale(1.2,.6)}75%{transform:scale(.96,1.06)}100%{transform:none}}
+.go .obj.firm{animation:firm 1.4s}
+@keyframes firm{48%{transform:none}52%{transform:translateY(2px)}56%{transform:none}}
+.drops{position:absolute;inset:0;pointer-events:none;z-index:3}
+.drop{position:absolute;top:2px;width:12px;height:17px;background:#3fa9f5;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;opacity:0}
+.go .repel .drop{animation:repel 1.7s ease-in forwards;animation-delay:var(--d)}
+.go .leak .drop{animation:leak 1.7s ease-in forwards;animation-delay:var(--d)}
+@keyframes repel{0%{opacity:1;transform:translateY(0)}50%{opacity:1;transform:translateY(58px)}100%{opacity:0;transform:translate(var(--x),120px)}}
+@keyframes leak{0%{opacity:1;transform:translateY(0)}55%{opacity:1;transform:translateY(70px)}100%{opacity:0;transform:translateY(80px) scale(.2)}}
+.wet .obj{filter:saturate(.55) brightness(.82)}
+.wet .obj::after{content:'💧';position:absolute;right:-4px;bottom:0;font-size:24px}
+.puddle{width:120px;height:24px;margin:-8px auto 0;background:#7cc6ff;border-radius:50%;border:2px solid #3fa9f5;transition:transform 1.4s ease .6s,opacity 1.4s ease .6s;position:relative;z-index:1}
+.dcell .obj.mover{transition:transform .6s, filter 1.2s ease .8s}
+.go .mover{transform:translateY(14px)}
+.go.absorb .puddle{transform:scale(.12);opacity:.25}
+.go.absorb .obj{filter:saturate(1.6) brightness(.82) hue-rotate(-8deg)}
+.go .stretch{animation:stretch 1.8s ease}
+@keyframes stretch{45%,55%{transform:scaleX(1.75)}}
+.strip{display:flex;width:150px;height:22px;margin:40px auto 34px}
+.strip i{flex:1;background:#ffd23f;border:3px solid #3d3040}
+.strip i:first-child{border-radius:6px 0 0 6px;transform-origin:100% 50%;border-right:0}
+.strip i:last-child{border-radius:0 6px 6px 0;transform-origin:0 50%}
+.strip.woodr i{background:repeating-linear-gradient(90deg,#d39a5c 0 8px,#c3854a 8px 10px)}
+.go .strip.bendy i:first-child{animation:bendL 1.8s ease}
+.go .strip.bendy i:last-child{animation:bendR 1.8s ease}
+@keyframes bendL{45%,55%{transform:rotate(-28deg)}}
+@keyframes bendR{45%,55%{transform:rotate(28deg)}}
+.go .strip.woodr{animation:shake .5s 2}
+.screen-stage{position:relative;height:220px;background:linear-gradient(#fdf6e3,#f3e7c9);border-radius:18px;overflow:hidden;border:3px solid var(--line)}
+.screen-stage .teddy{position:absolute;left:50%;bottom:14px;width:140px;height:140px;transform:translateX(-50%)}
+.panel{position:absolute;top:10px;bottom:10px;width:190px;left:-230px;border-radius:12px;border:5px solid #3d3040;transition:left .9s cubic-bezier(.3,1.2,.5,1);z-index:2}
+.panel.in{left:calc(50% - 95px)}
+.panel.k-glass{background:linear-gradient(120deg,rgba(255,255,255,.55) 0 16%,rgba(190,230,255,.3) 16% 30%,rgba(255,255,255,.55) 30% 35%,rgba(190,230,255,.25) 35%)}
+.panel.k-plastic{background:linear-gradient(120deg,rgba(255,255,255,.5) 0 20%,rgba(255,240,180,.25) 20%)}
+.panel.k-wood{background:repeating-linear-gradient(100deg,#c98a4b 0 9px,#b8763a 9px 12px,#d39a5c 12px 20px)}
+.panel.k-wood::after{content:'';position:absolute;right:14px;top:50%;width:14px;height:14px;border-radius:50%;background:#ffd23f;border:3px solid #3d3040}
+.panel.k-card{background:repeating-linear-gradient(90deg,#d6a46a 0 10px,#c99357 10px 12px)}
+.screen-res{text-align:center;font-weight:600;font-size:21px;min-height:30px;margin-top:8px}
+.opp-grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.opp{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;background:#f8f6ff;border-radius:18px;padding:8px 10px;text-align:center;font-weight:600;font-size:18px}
+.opp .ico-s{width:54px;height:54px;margin:0 auto}
+.opp .vs{font-size:22px;color:var(--pink)}
+.pairs{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:14px}
+.pairs .btn.on{background:var(--primary);color:#fff;box-shadow:0 5px 0 var(--primary-d)}
+.board{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.bcol{background:#f8f6ff;border-radius:22px;padding:14px;text-align:center}
+.bcol .top{display:flex;align-items:center;justify-content:center;gap:10px}
+.bcol .ico-s{width:72px;height:72px}
+.bcol h3{font-size:26px;margin:6px 0 10px}
+.pchip{display:flex;align-items:center;gap:8px;background:#fff;border:3px solid var(--line);border-radius:16px;padding:6px 10px;margin:6px 0;font-size:18px;font-weight:600;text-align:left}
+.pchip.both{border-color:#9fe3c1;background:#effcf5}
+.pchip.both::after{content:'BOTH';margin-left:auto;font-size:12px;background:var(--green);color:#fff;border-radius:8px;padding:1px 6px}
+.board-say{text-align:center;font-size:21px;font-weight:600;margin:12px 0}
+
+/* =========================================================
+   PART 4 – GAMES
+   ========================================================= */
+.tray{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;min-height:60px;padding:12px;background:#f8f6ff;border-radius:22px;margin-bottom:14px}
+.scard{border:4px solid var(--line);background:#fff;border-radius:18px;padding:6px 10px;display:flex;flex-direction:column;align-items:center;gap:2px;width:112px;font-weight:600;font-size:18px;box-shadow:0 4px 0 #e6e2f7;touch-action:none;user-select:none;-webkit-user-select:none}
+.scard .ico-s{width:58px;height:58px;display:grid;place-items:center}
+.scard.sel{border-color:var(--primary);background:#efeaff;transform:scale(1.06) rotate(-2deg)}
+.scard.dragging{opacity:.35}
+.scard.placed{border-color:#9fe3c1;background:#f3fdf8;cursor:default;width:96px;font-size:16px;animation:popIn .4s}
+.scard.placed .ico-s{width:44px;height:44px}
+.drag-ghost{position:fixed;z-index:999;pointer-events:none;transform:rotate(-4deg) scale(1.06);box-shadow:0 14px 28px rgba(0,0,0,.22);margin:0}
+.zones{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.zone{border:4px dashed #cfc7f3;border-radius:24px;padding:12px;min-height:200px;text-align:center;transition:all .2s;cursor:pointer}
+.zone h3{font-size:24px}
+.zone small{color:var(--muted);font-size:15px}
+.zone .zl{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:10px}
+.zone.z-obj{background:#fff7ef;border-color:#ffc999}
+.zone.z-mat{background:#effcf5;border-color:#9fe3c1}
+.zone.drop-hover,.zone.armed{transform:scale(1.02);border-style:solid;box-shadow:0 0 0 6px rgba(108,76,245,.15)}
+.zone.flash{animation:shake .45s}
+.score{text-align:center;font-size:20px;font-weight:600;margin-top:10px}
+.mystery{display:grid;grid-template-columns:minmax(180px,260px) 1fr;gap:18px;align-items:start}
+.bag-wrap{position:relative;text-align:center}
+.bag{width:100%;max-width:240px;margin:0 auto;transform-origin:50% 90%}
+.bag.jiggle{animation:wiggle .5s 3}
+.reveal-obj{position:absolute;left:50%;top:-10px;width:120px;height:120px;transform:translateX(-50%);animation:rise .8s cubic-bezier(.2,1.5,.4,1) forwards;background:#fff;border-radius:50%;padding:12px;box-shadow:0 8px 20px rgba(0,0,0,.18)}
+@keyframes rise{from{transform:translate(-50%,90px) scale(.2);opacity:0}}
+.clues{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:8px}
+.clues li{background:#fff7d6;border:3px solid #ffe08a;border-radius:18px 18px 18px 4px;padding:10px 14px;font-size:21px;font-weight:500;animation:popIn .4s}
+.clues li::before{content:'🔎 ';}
+.mq-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;font-weight:600;color:var(--muted)}
+.missions{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(270px,1fr))}
+.mission{border:4px solid var(--line);border-radius:24px;padding:14px;background:#fff;position:relative}
+.mission.done{border-color:#9fe3c1;background:#f3fdf8}
+.mission .mh{display:flex;align-items:center;gap:12px}
+.mission h3{font-size:20px}
+.mission .mh small{color:var(--muted);font-size:15px;display:block}
+.mission .ex-pic{width:46px;height:46px;flex:0 0 auto}
+.mission select,.mission input[type=text]{width:100%;padding:10px 12px;border-radius:14px;border:3px solid var(--line);font-size:18px;margin-top:8px;background:#fff}
+.mission .found-txt{font-size:20px;font-weight:600;color:var(--green);margin:10px 0 4px}
+.mission label.check{display:flex;align-items:center;gap:8px;font-size:16px;margin-top:8px;color:var(--muted)}
+.mission label.check input{width:22px;height:22px}
+.mission .stamp{position:absolute;top:-12px;right:-8px;font-size:40px;animation:popIn .5s}
+textarea{width:100%;min-height:80px;border-radius:16px;border:3px solid var(--line);padding:10px;font-size:18px}
+.pmatch{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.pobj{border:4px solid var(--line);background:#fff;border-radius:20px;padding:8px;text-align:center;font-weight:600;font-size:18px;box-shadow:0 4px 0 #e6e2f7;display:flex;flex-direction:column;align-items:center}
+.pobj .ico-s{width:66px;height:66px}
+.pobj.sel{border-color:var(--primary);background:#efeaff}
+.pobj.done{border-color:#9fe3c1;background:#f3fdf8}
+.pobj.drop-hover{border-color:var(--orange);background:#fff4ea}
+.pobj .got{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-top:4px;min-height:24px}
+.pobj .got span{background:var(--green);color:#fff;border-radius:10px;padding:0 8px;font-size:14px}
+.pcards{position:sticky;top:76px;z-index:5;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;background:rgba(255,255,255,.95);padding:10px;border-radius:20px;margin:0 0 12px;box-shadow:var(--shadow-s)}
+.pcard{border:3px solid #ffe08a;background:#fff7d6;border-radius:30px;padding:8px 14px;font-weight:600;font-size:18px;touch-action:none;user-select:none;-webkit-user-select:none}
+.pcard.sel{background:var(--primary);color:#fff;border-color:var(--primary)}
+.tick-rows{display:grid;gap:10px}
+.trow{display:grid;grid-template-columns:minmax(150px,1.2fr) 3fr;gap:10px;align-items:center;border:3px solid var(--line);border-radius:20px;padding:8px 10px;background:#fff}
+.trow.ok{border-color:#9fe3c1;background:#f3fdf8}
+.trow.bad{border-color:#ffd0a1;background:#fff8f0}
+.trow .tl{display:flex;align-items:center;gap:8px;font-weight:600;font-size:18px}
+.trow .tl .ico-s{width:50px;height:50px;flex:0 0 auto}
+.tbtns{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.tbtn{border:3px solid var(--line);background:#fff;border-radius:14px;padding:8px 4px;font-size:15px;font-weight:600;min-height:48px}
+.tbtn.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.tbtn.on::before{content:'✓ '}
+.enq{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:12px}
+.enq span{background:#f1eefe;border-radius:30px;padding:4px 12px;font-size:15px;font-weight:600;opacity:.45}
+.enq span.on{opacity:1;background:var(--primary);color:#fff}
+.lab-sec{margin:14px 0;padding:14px;border-radius:22px;background:#f8f6ff}
+.lab-sec h3{font-size:22px;margin-bottom:8px}
+.rigs{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.rig{position:relative;background:#fff;border:3px solid var(--line);border-radius:18px;padding:10px;text-align:center;overflow:hidden}
+.rig .air{position:relative;height:190px}
+.rig .sheet{position:absolute;left:12%;right:12%;top:54px;height:16px;border-radius:8px;border:3px solid #3d3040;z-index:2}
+.rig .tdy{position:absolute;left:50%;bottom:0;width:96px;height:96px;transform:translateX(-50%)}
+.rig .drop{top:0}
+.rig.go.repel .drop{animation:rrepel 1.8s ease-in forwards;animation-delay:var(--d)}
+.rig.go.leak .drop{animation:rleak 2s ease-in forwards;animation-delay:var(--d)}
+@keyframes rrepel{0%{opacity:1;transform:translateY(0)}45%{opacity:1;transform:translateY(40px)}100%{opacity:0;transform:translate(var(--x),70px)}}
+@keyframes rleak{0%{opacity:1;transform:translateY(0)}35%{opacity:1;transform:translateY(42px)}55%{opacity:1;transform:translateY(50px)}100%{opacity:.9;transform:translateY(140px)}}
+.rig.wet .sheet{filter:brightness(.75)}
+.rig.wet .tdy::after{content:'😢💦';position:absolute;top:-16px;right:-26px;font-size:22px}
+.rig.dry .tdy::after{content:'😀';position:absolute;top:-16px;right:-20px;font-size:22px}
+.rig .rr{font-weight:600;min-height:26px;font-size:17px}
+table.rec{width:100%;border-collapse:separate;border-spacing:0 6px;font-size:19px}
+table.rec td,table.rec th{background:#fff;padding:8px 10px;text-align:left}
+table.rec th{background:transparent;color:var(--muted);font-size:16px}
+table.rec td:first-child{border-radius:12px 0 0 12px}table.rec td:last-child{border-radius:0 12px 12px 0}
+
+/* =========================================================
+   PART 5 – QUIZ + RESULTS
+   ========================================================= */
+.quiz{max-width:800px;margin:0 auto}
+.qbar{display:flex;justify-content:space-between;font-weight:600;color:var(--muted);margin-bottom:6px}
+.qprog{height:12px;background:#ece9fb;border-radius:10px;overflow:hidden;margin-bottom:14px}
+.qprog i{display:block;height:100%;background:linear-gradient(90deg,var(--yellow),var(--orange));transition:width .5s}
+.qq{font-size:clamp(24px,4.4vw,32px);text-align:center;margin:8px 0 16px}
+.results{text-align:center}
+.trophy{font-size:90px;animation:popIn .7s;line-height:1}
+.res-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:16px 0}
+.res-grid div{background:#f8f6ff;border-radius:18px;padding:12px;font-size:16px;color:var(--muted);font-weight:600}
+.res-grid b{display:block;font-size:34px;color:var(--ink)}
+.level{font-size:clamp(26px,5vw,38px);color:var(--primary);font-weight:700;margin:6px 0}
+
+/* =========================================================
+   CERTIFICATE + BADGES
+   ========================================================= */
+.cert{position:relative;max-width:800px;margin:16px auto;background:#fffdf5;border-radius:24px;padding:30px 24px;text-align:center;
+  border:10px solid transparent;background-clip:padding-box;box-shadow:0 0 0 6px #ffd23f, 0 0 0 12px #6c4cf5, var(--shadow)}
+.cert .cm{width:96px;height:112px;margin:0 auto}
+.cert .c1{font-size:18px;letter-spacing:3px;color:var(--muted);font-weight:600}
+.cert .cname{font-size:clamp(34px,7vw,56px);color:var(--primary);font-weight:700;border-bottom:4px dotted #cfc7f3;display:inline-block;padding:0 20px;margin:8px 0;min-width:60%}
+.cert .ctitle{font-size:clamp(24px,5vw,34px);font-weight:700;color:var(--orange);letter-spacing:2px}
+.cert .cfor{font-size:20px;margin:8px 0 14px}
+.cert .cb{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+.cert .cfoot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:18px;font-size:16px;color:var(--muted)}
+.cert .corner{position:absolute;font-size:34px}
+.badge{display:inline-flex;flex-direction:column;align-items:center;gap:4px;width:110px;font-size:14px;font-weight:600;text-align:center}
+.badge .bi{width:74px;height:74px;border-radius:50%;display:grid;place-items:center;font-size:36px;background:radial-gradient(circle at 35% 30%,#fff7c7,#ffd23f 60%,#f5a623);border:4px solid #fff;box-shadow:0 0 0 3px #f5a623, 0 6px 12px rgba(0,0,0,.15)}
+.badge.off .bi{background:#eee;box-shadow:0 0 0 3px #ddd;filter:grayscale(1);opacity:.5}
+.badge.off{color:#aaa}
+.shelf{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+
+/* =========================================================
+   MODAL, TOAST, FX
+   ========================================================= */
+.overlay{position:fixed;inset:0;background:rgba(30,20,70,.5);display:flex;align-items:center;justify-content:center;padding:16px;z-index:500;animation:fade .25s}
+@keyframes fade{from{opacity:0}}
+.modal{background:#fff;border-radius:30px;max-width:760px;width:100%;max-height:92vh;overflow:auto;padding:24px;position:relative;animation:popIn .4s cubic-bezier(.2,1.4,.4,1)}
+.modal .x{position:absolute;right:12px;top:12px;border:0;background:#f1eefe;border-radius:50%;width:44px;height:44px;font-size:22px}
+.badge-pop{text-align:center}
+.badge-pop .badge{width:auto}
+.badge-pop .bi{width:140px;height:140px;font-size:70px;animation:spinIn 1s cubic-bezier(.2,1.4,.4,1)}
+@keyframes spinIn{from{transform:rotate(-200deg) scale(.2)}}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 20px;border-radius:20px;font-size:19px;z-index:600;animation:popIn .3s;max-width:90vw;text-align:center}
+.confetti{position:fixed;top:-20px;width:11px;height:15px;z-index:999;pointer-events:none;animation:conf linear forwards;border-radius:3px}
+@keyframes conf{to{transform:translate(var(--dx),110vh) rotate(var(--r))}}
+.float-star{position:fixed;font-size:34px;z-index:999;pointer-events:none;animation:floatup 1.1s ease-out forwards}
+@keyframes floatup{to{transform:translateY(-90px) scale(1.4);opacity:0}}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:720px){
+  body{font-size:18px}
+  .hud{flex-wrap:wrap;gap:8px;padding:8px 12px}
+  .brand-t{display:none}
+  .prog{order:3;flex-basis:100%}
+  .hud-btns{margin-left:auto}
+  .icon-btn{width:36px;height:36px;font-size:16px}
+  main{padding:12px 12px 120px}
+  .step{padding:16px 14px 20px;border-radius:24px}
+  .g-mascot{width:54px;height:64px}
+  .bubble{font-size:18px}
+  .dot{width:32px;height:32px;font-size:15px}
+  .nav .btn{padding:10px 14px;font-size:17px;min-height:46px;white-space:nowrap}
+  .dots{flex-wrap:nowrap;gap:3px}
+  .dot{width:28px;height:28px;font-size:13px;border-width:2px}
+  .mystery{grid-template-columns:1fr}
+  .bag{max-width:170px}
+  .zones{grid-template-columns:1fr 1fr;gap:8px}
+  .scard{width:96px;font-size:16px}
+  .trow{grid-template-columns:1fr}
+  .tbtns{grid-template-columns:repeat(2,1fr)}
+  .match{grid-template-columns:1fr 1fr;gap:8px}
+  .mitem{font-size:16px;padding:6px 8px;gap:6px}
+  .mitem .ico-s{width:40px;height:40px}
+  .board{grid-template-columns:1fr}
+  .pcards{top:118px}
+  .opts{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
+}
+@media (max-width:440px){
+  .dots{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  .g-mascot,.lab-shelf .matc,.welcome .w-mascot,.hot:not(.found){animation:none}
+}
+@media print{
+  body{background:#fff}
+  body *{visibility:hidden}
+  .cert,.cert *{visibility:visible}
+  .cert{position:absolute;left:0;top:0;width:100%;margin:0;box-shadow:0 0 0 6px #ffd23f, 0 0 0 12px #6c4cf5}
+  .hud,.nav{display:none}
+}
+</style>
+</head>
+<body>
+<header class="hud">
+  <div class="brand"><span class="brand-m" id="brandM"></span><span class="brand-t">Little Scientist Lab<small>Everyday Materials</small></span></div>
+  <div class="prog" aria-label="Adventure progress">
+    <div class="prog-bar"><i id="progFill"></i><span id="progRocket">🚀</span></div>
+    <small id="progText"></small>
+  </div>
+  <div class="hud-btns">
+    <button class="hud-chip" id="starsBtn" title="Your stars" aria-label="Stars collected">⭐ <b id="starNum">0</b></button>
+    <button class="hud-chip" id="badgeBtn" title="Your badges" aria-label="Badges earned">🏅 <b id="badgeNum">0</b></button>
+    <button class="icon-btn" id="soundBtn" title="Sound effects on/off" aria-pressed="true">🔊</button>
+    <button class="icon-btn" id="voiceBtn" title="Read every page aloud" aria-pressed="false">🗣️</button>
+    <button class="icon-btn" id="restartBtn" title="Start again">↺</button>
+  </div>
+</header>
+
+<main id="stage" aria-live="polite"></main>
+
+<footer class="nav">
+  <button class="btn ghost" id="prev">◀ Back</button>
+  <div class="dots" id="dots"></div>
+  <button class="btn primary" id="next">Next ▶</button>
+</footer>
+
+<script>
+'use strict';
+/* =========================================================
+   1. ICON LIBRARY – every picture is inline SVG, so the
+      lesson works fully offline with no broken images.
+   ========================================================= */
+const IC = {
+chair:`<rect x="28" y="10" width="8" height="48" rx="3" fill="#b5713b"/><rect x="64" y="10" width="8" height="48" rx="3" fill="#b5713b"/><rect x="28" y="14" width="44" height="8" rx="3" fill="#cf8f4f"/><rect x="28" y="28" width="44" height="7" rx="3" fill="#cf8f4f"/><rect x="20" y="54" width="60" height="10" rx="3" fill="#dc9f5f"/><rect x="25" y="63" width="7" height="30" rx="3" fill="#a5642f"/><rect x="68" y="63" width="7" height="30" rx="3" fill="#a5642f"/>`,
+bottle:`<path d="M40 17h20v7c8 4 12 10 12 18v44a6 6 0 0 1-6 6H34a6 6 0 0 1-6-6V42c0-8 4-14 12-18z" fill="#cdeeff"/><rect x="41" y="6" width="18" height="11" rx="3" fill="#2f7de1"/><rect x="28" y="50" width="44" height="16" fill="#5bb4f0"/><path d="M35 34v48" stroke="#fff" stroke-width="4" opacity=".9"/>`,
+spoon:`<rect x="45.5" y="47" width="9" height="46" rx="4.5" fill="#b3bdc8"/><ellipse cx="50" cy="28" rx="16" ry="21" fill="#d5dce4"/><path d="M42 17q-4 10 0 20" stroke="#fff" stroke-width="4" fill="none"/>`,
+fork:`<rect x="45.5" y="46" width="9" height="47" rx="4.5" fill="#b3bdc8"/><path d="M34 8v22c0 9 7 16 16 16s16-7 16-16V8z" fill="#d5dce4"/><path d="M42 6v22M50 6v22M58 6v22" stroke="#fff" stroke-width="4"/>`,
+window:`<rect x="14" y="12" width="72" height="76" rx="4" fill="#f4f1ea"/><rect x="20" y="18" width="28" height="30" fill="#bfe6ff"/><rect x="52" y="18" width="28" height="30" fill="#bfe6ff"/><rect x="20" y="52" width="28" height="30" fill="#bfe6ff"/><rect x="52" y="52" width="28" height="30" fill="#bfe6ff"/><path d="M25 32l12-10M57 66l12-10M26 42l16-14" stroke="#fff" stroke-width="3"/>`,
+tshirt:`<path d="M36 12l-22 12 8 18 10-5v51h36V37l10 5 8-18-22-12c-2 6-7 9-14 9s-12-3-14-9z" fill="#ffcf3f"/>`,
+wall:`<rect x="6" y="18" width="88" height="70" rx="4" fill="#8f969d"/><rect x="10" y="22" width="36" height="18" rx="6" fill="#b8bdc3"/><rect x="50" y="22" width="40" height="18" rx="6" fill="#a9afb6"/><rect x="10" y="44" width="22" height="18" rx="6" fill="#a9afb6"/><rect x="36" y="44" width="30" height="18" rx="6" fill="#c3c7cc"/><rect x="70" y="44" width="20" height="18" rx="6" fill="#b8bdc3"/><rect x="10" y="66" width="40" height="18" rx="6" fill="#c3c7cc"/><rect x="54" y="66" width="36" height="18" rx="6" fill="#a9afb6"/>`,
+rock:`<path d="M16 76l6-28 18-18 24 4 16 16 4 22-12 8H28z" fill="#9b9ea3"/><path d="M42 34l-6 18 14 8M66 40l-4 14" fill="none" stroke="#6d7076"/><path d="M28 50l6-10" stroke="#c4c7cb" stroke-width="4"/>`,
+ore:`<path d="M16 76l6-28 18-18 24 4 16 16 4 22-12 8H28z" fill="#8d8f94"/><path d="M38 50l10-7 7 9-10 7z" fill="#eef1f5"/><path d="M60 62l7-5 5 7-7 5z" fill="#ffc83d"/><path d="M30 64l6-4 4 5-6 4z" fill="#eef1f5"/>`,
+pebbles:`<ellipse cx="50" cy="44" rx="18" ry="11" fill="#c7cbd0"/><ellipse cx="32" cy="66" rx="21" ry="13" fill="#9fa4aa"/><ellipse cx="68" cy="70" rx="19" ry="12" fill="#b9a79a"/><path d="M22 62q6-5 14-4M42 40q5-4 12-3" stroke="#fff" stroke-width="3" fill="none"/>`,
+steps:`<path d="M8 90V70h28V52h28V34h28v56z" fill="#a9afb6"/><path d="M8 70h28M36 52h28M64 34h28" stroke-width="5" stroke="#7d848b"/><path d="M14 80h8M44 62h10M72 46h10" stroke="#c9cdd2" stroke-width="3"/>`,
+tree:`<rect x="43" y="54" width="14" height="38" rx="3" fill="#8b5a2b"/><circle cx="32" cy="48" r="16" fill="#3ea851"/><circle cx="68" cy="48" r="16" fill="#3ea851"/><circle cx="50" cy="32" r="24" fill="#4cbb5e"/>`,
+table:`<rect x="16" y="44" width="8" height="46" rx="3" fill="#a5642f"/><rect x="76" y="44" width="8" height="46" rx="3" fill="#a5642f"/><rect x="8" y="34" width="84" height="12" rx="3" fill="#cf8f4f"/>`,
+pencil:`<path d="M14 42h58l18 8-18 8H14z" fill="#ffc83d"/><path d="M72 42l18 8-18 8z" fill="#f2d2a2"/><path d="M84 47l6 3-6 3z" fill="#3d3040"/><rect x="6" y="42" width="12" height="16" rx="3" fill="#ff8fa3"/>`,
+door:`<rect x="24" y="8" width="52" height="86" rx="4" fill="#b5713b"/><rect x="31" y="16" width="38" height="28" rx="3" fill="#c98a4b"/><rect x="31" y="52" width="38" height="34" rx="3" fill="#c98a4b"/><circle cx="66" cy="50" r="4" fill="#ffd23f"/>`,
+woodblock:`<path d="M18 36l32-14 32 14v38L50 88 18 74z" fill="#d39a5c"/><path d="M18 36l32 14 32-14M50 50v38" fill="none"/><path d="M26 52l16 7M26 62l16 7M60 58l14-6" stroke="#b5713b" stroke-width="2"/>`,
+blocks:`<rect x="12" y="52" width="36" height="28" rx="3" fill="#ff5a5a"/><rect x="16" y="44" width="10" height="8" rx="2" fill="#ff5a5a"/><rect x="34" y="44" width="10" height="8" rx="2" fill="#ff5a5a"/><rect x="50" y="56" width="38" height="24" rx="3" fill="#3fa9f5"/><rect x="55" y="48" width="10" height="8" rx="2" fill="#3fa9f5"/><rect x="73" y="48" width="10" height="8" rx="2" fill="#3fa9f5"/><rect x="30" y="24" width="36" height="20" rx="3" fill="#ffd23f"/><rect x="34" y="16" width="10" height="8" rx="2" fill="#ffd23f"/><rect x="52" y="16" width="10" height="8" rx="2" fill="#ffd23f"/>`,
+lunchbox:`<path d="M38 26v-8h24v8" fill="none" stroke-width="5"/><rect x="12" y="26" width="76" height="58" rx="10" fill="#7ed957"/><rect x="12" y="26" width="76" height="16" rx="8" fill="#5cc23a"/>`,
+bucket:`<path d="M24 34q26-32 52 0" fill="none" stroke-width="3"/><path d="M24 34h52l-7 54H31z" fill="#ff8a3d"/><rect x="20" y="30" width="60" height="8" rx="4" fill="#ff6b1a"/>`,
+ruler:`<rect x="6" y="38" width="88" height="24" rx="3" fill="#ffd23f"/><path d="M16 38v8M26 38v12M36 38v8M46 38v12M56 38v8M66 38v12M76 38v8M86 38v12" stroke-width="2"/>`,
+woodruler:`<rect x="6" y="38" width="88" height="24" rx="3" fill="#d39a5c"/><path d="M16 38v8M26 38v12M36 38v8M46 38v12M56 38v8M66 38v12M76 38v8M86 38v12" stroke-width="2"/>`,
+key:`<circle cx="28" cy="50" r="16" fill="#ffc83d"/><circle cx="28" cy="50" r="6" fill="#fff"/><rect x="42" y="45" width="48" height="10" rx="3" fill="#ffc83d"/><rect x="72" y="55" width="7" height="12" fill="#ffc83d"/><rect x="83" y="55" width="7" height="9" fill="#ffc83d"/>`,
+pot:`<rect x="4" y="46" width="14" height="7" rx="3" fill="#6d7680"/><rect x="82" y="46" width="14" height="7" rx="3" fill="#6d7680"/><rect x="18" y="40" width="64" height="44" rx="8" fill="#aab4bf"/><rect x="14" y="34" width="72" height="10" rx="5" fill="#cfd6de"/><rect x="44" y="26" width="12" height="8" rx="3" fill="#6d7680"/><path d="M27 52v22" stroke="#fff" stroke-width="4"/>`,
+coins:`<circle cx="64" cy="40" r="20" fill="#d9dee4"/><circle cx="64" cy="40" r="12" fill="none" stroke="#a9b2bc" stroke-width="3"/><circle cx="38" cy="62" r="22" fill="#ffc83d"/><circle cx="38" cy="62" r="14" fill="none" stroke="#e0a100" stroke-width="3"/>`,
+glasscup:`<path d="M26 12h48l-6 78H32z" fill="#e4f5ff"/><path d="M29 44h42l-3.5 46H32.5z" fill="#9fd6ff"/><path d="M37 20l3 60" stroke="#fff" stroke-width="4"/>`,
+jar:`<rect x="22" y="26" width="56" height="64" rx="12" fill="#e6f6ff"/><rect x="28" y="12" width="44" height="14" rx="3" fill="#ff8a3d"/><path d="M32 36v42" stroke="#fff" stroke-width="5"/>`,
+glassbottle:`<path d="M44 10h12v20c10 4 14 10 14 20v36a6 6 0 0 1-6 6H36a6 6 0 0 1-6-6V50c0-10 4-16 14-20z" fill="#c8eedb"/><rect x="42" y="4" width="16" height="9" rx="2" fill="#b5713b"/><path d="M38 46v38" stroke="#fff" stroke-width="4"/>`,
+bulb:`<rect x="38" y="62" width="24" height="22" rx="3" fill="#b3bdc8"/><path d="M38 70h24M38 77h24" stroke-width="2"/><circle cx="50" cy="38" r="26" fill="#fff6c2"/><path d="M42 42l4-6 4 6 4-6 4 6" fill="none" stroke="#ff9f43" stroke-width="2.5"/>`,
+specs:`<path d="M10 48 4 36M90 48l6-12" stroke-width="4"/><circle cx="28" cy="52" r="18" fill="#dff3ff"/><circle cx="72" cy="52" r="18" fill="#dff3ff"/><path d="M46 50q4-6 8 0" fill="none" stroke-width="4"/><path d="M20 48l8-7M64 48l8-7" stroke="#fff" stroke-width="3"/>`,
+socks:`<path d="M30 10h22v44l20 14c6 5 6 14-1 18-4 3-9 3-13 1L34 74c-3-2-4-5-4-8z" fill="#ff5fa2"/><rect x="30" y="10" width="22" height="10" fill="#fff"/>`,
+towel:`<rect x="14" y="58" width="72" height="18" rx="6" fill="#3fa9f5"/><rect x="14" y="40" width="72" height="18" rx="6" fill="#ff8a3d"/><rect x="14" y="22" width="72" height="18" rx="6" fill="#7ed957"/><path d="M20 31h60M20 49h60M20 67h60" stroke="#fff" stroke-width="2" stroke-dasharray="4 4"/>`,
+curtains:`<rect x="8" y="8" width="84" height="7" rx="3" fill="#8b5a2b"/><path d="M12 15h30c-4 20 0 50 6 77H12z" fill="#b388ff"/><path d="M88 15H58c4 20 0 50-6 77h36z" fill="#b388ff"/><path d="M20 22v62M30 22v62M80 22v62M70 22v62" stroke="#9b6cf0" stroke-width="2"/>`,
+blanket:`<rect x="10" y="18" width="80" height="64" rx="8" fill="#ffd6e7"/><path d="M10 39h80M10 60h80M36 18v64M63 18v64" stroke="#ff8fbf" stroke-width="4"/>`,
+pillow:`<path d="M14 30q36-12 72 0q8 20 0 40q-36 12-72 0q-8-20 0-40z" fill="#e8eeff"/><path d="M28 40q22-6 44 0" stroke="#c7d3ff" stroke-width="3" fill="none"/>`,
+teddy:`<circle cx="30" cy="24" r="10" fill="#c98a4b"/><circle cx="70" cy="24" r="10" fill="#c98a4b"/><ellipse cx="50" cy="74" rx="24" ry="20" fill="#d79a5a"/><circle cx="50" cy="38" r="22" fill="#d79a5a"/><ellipse cx="50" cy="46" rx="9" ry="7" fill="#f2d2a2"/><circle cx="42" cy="33" r="3" fill="#3d3040"/><circle cx="58" cy="33" r="3" fill="#3d3040"/><circle cx="50" cy="43" r="3" fill="#3d3040"/><ellipse cx="50" cy="76" rx="11" ry="9" fill="#f2d2a2"/>`,
+raincoat:`<path d="M34 12h32l18 22-8 6-6-6v56H30V34l-6 6-8-6z" fill="#ffd23f"/><path d="M38 12q12 14 24 0" fill="#f2b800"/><path d="M50 26v62" stroke-width="2"/><circle cx="56" cy="42" r="2.5" fill="#3d3040"/><circle cx="56" cy="58" r="2.5" fill="#3d3040"/>`,
+umbrella:`<path d="M50 48v34q0 8-8 8q-8 0-8-8" fill="none" stroke-width="5"/><path d="M8 48a42 36 0 0 1 84 0q-7-6-14 0q-7-6-14 0q-7-6-14 0q-7-6-14 0q-7-6-14 0q-7-6-14 0z" fill="#ff5a5a"/>`,
+sponge:`<rect x="12" y="26" width="76" height="50" rx="10" fill="#ffd23f"/><rect x="12" y="62" width="76" height="14" rx="6" fill="#4cbb5e"/><circle cx="30" cy="40" r="4" fill="#e8b800"/><circle cx="52" cy="36" r="3" fill="#e8b800"/><circle cx="70" cy="46" r="4" fill="#e8b800"/><circle cx="42" cy="52" r="3" fill="#e8b800"/>`,
+rubberband:`<ellipse cx="50" cy="50" rx="34" ry="20" fill="none" stroke="#3d3040" stroke-width="11"/><ellipse cx="50" cy="50" rx="34" ry="20" fill="none" stroke="#e0892c" stroke-width="6"/>`,
+book:`<rect x="18" y="14" width="64" height="74" rx="4" fill="#6c4cf5"/><rect x="24" y="14" width="6" height="74" fill="#5536d8"/><rect x="38" y="28" width="34" height="10" rx="3" fill="#fff"/>`,
+box:`<path d="M12 36l38-16 38 16v44l-38 14-38-14z" fill="#d6a46a"/><path d="M12 36l38 14 38-14M50 50v44" fill="none"/><path d="M31 28l38 14" stroke="#b5803f" stroke-width="5"/>`,
+boat:`<path d="M50 56V12" stroke-width="4"/><path d="M53 14l28 36H53z" fill="#fff"/><path d="M8 56h84l-12 24H20z" fill="#c98a4b"/>`,
+guitar:`<circle cx="50" cy="78" r="16" fill="#d79a5a"/><circle cx="50" cy="58" r="12" fill="#d79a5a"/><rect x="46" y="6" width="8" height="50" rx="3" fill="#8b5a2b"/><circle cx="50" cy="72" r="5" fill="#3d3040"/>`,
+car:`<path d="M10 64v-14l12-4 10-14h36l12 14 10 4v14z" fill="#3fa9f5"/><path d="M36 36h12v10H30zM54 36h12l6 10H54z" fill="#dff3ff"/><circle cx="28" cy="66" r="9" fill="#3d3040"/><circle cx="72" cy="66" r="9" fill="#3d3040"/>`,
+ball:`<circle cx="50" cy="50" r="38" fill="#fff"/><path d="M50 12a38 38 0 0 1 38 38H50z" fill="#ff5a5a"/><path d="M50 50H12a38 38 0 0 0 38 38z" fill="#3fa9f5"/><circle cx="50" cy="50" r="8" fill="#ff8a3d"/><circle cx="50" cy="50" r="38" fill="none"/>`,
+bag:`<path d="M36 36q0-22 14-22q14 0 14 22" fill="none" stroke-width="5"/><path d="M22 36h56l-6 54H28z" fill="#ff5a5a"/><path d="M36 50v30M50 50v30M64 50v30" stroke="#fff" stroke-width="3"/>`,
+sheep:`<circle cx="34" cy="50" r="14" fill="#fff"/><circle cx="50" cy="42" r="16" fill="#fff"/><circle cx="66" cy="50" r="14" fill="#fff"/><circle cx="50" cy="58" r="16" fill="#fff"/><rect x="36" y="68" width="6" height="18" fill="#3d3040"/><rect x="58" y="68" width="6" height="18" fill="#3d3040"/><ellipse cx="80" cy="44" rx="10" ry="12" fill="#3d3040"/><circle cx="83" cy="41" r="2" fill="#fff"/>`,
+cotton:`<path d="M50 92V54" stroke="#4cbb5e" stroke-width="5"/><path d="M36 54l14 8 14-8" fill="#4cbb5e"/><circle cx="40" cy="38" r="12" fill="#fff"/><circle cx="60" cy="36" r="13" fill="#fff"/><circle cx="50" cy="48" r="12" fill="#fff"/>`,
+oil:`<rect x="24" y="14" width="52" height="74" rx="8" fill="#3d3040"/><path d="M24 34h52M24 68h52" stroke="#6b5b7b" stroke-width="4"/><text x="50" y="57" font-size="15" text-anchor="middle" fill="#fff" stroke="none" font-weight="700" font-family="sans-serif">OIL</text>`,
+sand:`<path d="M6 86q20-52 44-56q24 4 44 56z" fill="#f2d48f"/><circle cx="40" cy="60" r="2" fill="#c9a24f"/><circle cx="56" cy="50" r="2" fill="#c9a24f"/><circle cx="62" cy="70" r="2" fill="#c9a24f"/><circle cx="30" cy="76" r="2" fill="#c9a24f"/><circle cx="74" cy="78" r="2" fill="#c9a24f"/>`,
+duck:`<ellipse cx="54" cy="68" rx="34" ry="20" fill="#ffd23f"/><circle cx="40" cy="38" r="18" fill="#ffd23f"/><path d="M22 40l-14 4 14 6z" fill="#ff8a3d"/><circle cx="36" cy="34" r="3" fill="#3d3040"/>`,
+hat:`<path d="M18 70q0-44 32-44t32 44z" fill="#ff5a5a"/><path d="M34 38v30M50 30v38M66 38v30" stroke="#d94a4a" stroke-width="3"/><rect x="14" y="66" width="72" height="16" rx="6" fill="#d94a4a"/><circle cx="50" cy="22" r="9" fill="#ff8fa3"/>`,
+brick:`<rect x="8" y="58" width="40" height="22" rx="3" fill="#c8553d"/><rect x="52" y="58" width="40" height="22" rx="3" fill="#b94a33"/><rect x="28" y="34" width="44" height="22" rx="3" fill="#d2654b"/>`,
+chalk:`<rect x="12" y="40" width="76" height="20" rx="8" fill="#fff"/><path d="M20 46h20" stroke="#ddd" stroke-width="3"/>`,
+straw:`<rect x="44" y="6" width="12" height="88" rx="5" fill="#fff"/><path d="M44 16l12 8M44 32l12 8M44 48l12 8M44 64l12 8M44 80l12 8" stroke="#ff5a5a" stroke-width="4"/>`,
+papertowel:`<path d="M62 30h24v56H62" fill="#fff"/><rect x="22" y="18" width="40" height="70" rx="6" fill="#fff"/><ellipse cx="42" cy="18" rx="20" ry="6" fill="#f1f1f1"/><ellipse cx="42" cy="18" rx="6" ry="2" fill="#c9b79c"/><path d="M30 34v44" stroke="#e8e8e8" stroke-width="3"/>`,
+cloth:`<path d="M14 24q18-6 36 0t36 0v54q-18 6-36 0t-36 0z" fill="#9fb4ff"/><path d="M14 40q18-6 36 0t36 0M14 58q18-6 36 0t36 0" stroke="#7e95f0" stroke-width="3" fill="none"/>`,
+plasticsheet:`<path d="M14 26h72v50H14z" fill="#cdeeff"/><path d="M22 34l14 10M58 52l16 12" stroke="#fff" stroke-width="4"/>`,
+house:`<path d="M14 48 50 16l36 32" fill="#ff8a3d"/><rect x="22" y="44" width="56" height="44" fill="#ffe8b8"/><rect x="42" y="62" width="16" height="26" fill="#b5713b"/><rect x="28" y="52" width="10" height="10" fill="#bfe6ff"/><rect x="62" y="52" width="10" height="10" fill="#bfe6ff"/>`
+};
+/* Professor Pip – the friendly lab guide */
+const MASCOT = `<svg viewBox="0 0 120 140" class="ico" aria-hidden="true"><g stroke="#3d3040" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+<path d="M28 140v-24c0-17 14-28 32-28s32 11 32 28v24z" fill="#fff"/><path d="M60 92v48M46 96l6 22M74 96l-6 22" fill="none"/>
+<path d="M50 92l10 6 10-6v10l-10-4-10 4z" fill="#ff5fa2"/>
+<path d="M94 104v-10h10v10l10 22H84z" fill="#7ed957"/><path d="M88 116h22" stroke-width="2"/>
+<circle cx="60" cy="56" r="30" fill="#ffd7b5"/>
+<path d="M30 52q-4-32 30-32q34 0 30 32q-6-12-16-10q-6-8-14-2q-10-6-16 2q-10-2-14 10z" fill="#6b3f1f"/>
+<rect x="34" y="31" width="52" height="8" rx="4" fill="#3fa9f5"/><circle cx="47" cy="36" r="8" fill="#bfe6ff"/><circle cx="73" cy="36" r="8" fill="#bfe6ff"/>
+<circle cx="49" cy="58" r="4" fill="#3d3040"/><circle cx="71" cy="58" r="4" fill="#3d3040"/>
+<path d="M49 70q11 10 22 0" fill="none"/>
+<circle cx="40" cy="68" r="4" fill="#ffaaaa" stroke="none"/><circle cx="80" cy="68" r="4" fill="#ffaaaa" stroke="none"/>
+<circle cx="50.5" cy="56.5" r="1.4" fill="#fff" stroke="none"/><circle cx="72.5" cy="56.5" r="1.4" fill="#fff" stroke="none"/>
+</g></svg>`;
+/* Mystery feely bag */
+const BAG = `<svg viewBox="0 0 120 130" class="ico" aria-hidden="true"><g stroke="#3d3040" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+<path d="M32 42q-16 30-10 60q4 18 28 18h20q24 0 28-18q6-30-10-60z" fill="#b388ff"/>
+<path d="M36 42q24 10 48 0l-8-14H44z" fill="#9b6cf0"/><path d="M40 36q20 8 40 0" fill="none"/>
+<path d="M60 30q-10-18-22-14M60 30q10-18 22-14" fill="none" stroke-width="4"/>
+<text x="60" y="96" font-size="44" text-anchor="middle" fill="#fff" stroke="none" font-weight="700" font-family="sans-serif">?</text>
+</g></svg>`;
+/* Big chair with clickable parts (Part 1) */
+const CHAIR_BIG = `<svg viewBox="0 0 200 230" class="chair-big" role="img" aria-label="A chair with wooden legs, a plastic seat and metal screws"><g stroke="#3d3040" stroke-width="3" stroke-linejoin="round">
+<g class="hot" data-part="wood" tabindex="0" role="button" aria-label="Wooden legs and back">
+<rect x="46" y="10" width="14" height="110" rx="5" fill="#b5713b"/><rect x="140" y="10" width="14" height="110" rx="5" fill="#b5713b"/>
+<rect x="46" y="20" width="108" height="14" rx="5" fill="#cf8f4f"/><rect x="46" y="50" width="108" height="12" rx="5" fill="#cf8f4f"/>
+<rect x="50" y="138" width="14" height="84" rx="5" fill="#a5642f"/><rect x="136" y="138" width="14" height="84" rx="5" fill="#a5642f"/></g>
+<g class="hot" data-part="plastic" tabindex="0" role="button" aria-label="Plastic seat">
+<rect x="28" y="112" width="144" height="30" rx="12" fill="#ff5a5a"/><path d="M44 121h60" stroke="#fff" stroke-width="5" opacity=".7"/></g>
+<g class="hot" data-part="metal" tabindex="0" role="button" aria-label="Metal screws">
+<circle cx="57" cy="132" r="16" fill="transparent" stroke="none"/><circle cx="143" cy="132" r="16" fill="transparent" stroke="none"/>
+<circle cx="57" cy="132" r="7" fill="#d5dce4"/><path d="M53 132h8" stroke-width="2"/><circle cx="143" cy="132" r="7" fill="#d5dce4"/><path d="M139 132h8" stroke-width="2"/></g>
+</g></svg>`;
+
+/* =========================================================
+   2. LESSON CONTENT (structured data)
+   ========================================================= */
+const CHAPTERS = [
+  {name:'Welcome', short:'Start', icon:'🚀', color:'#6c4cf5'},
+  {name:'Part 1 · The Big Discovery', short:'Objects', icon:'🔍', color:'#ff8a3d'},
+  {name:'Part 2 · Material Explorer', short:'Materials', icon:'🧪', color:'#1fa968'},
+  {name:'Part 3 · Property Detective', short:'Properties', icon:'🕵️', color:'#3fa9f5'},
+  {name:'Part 4 · Science Games', short:'Games', icon:'🎮', color:'#ff5fa2'},
+  {name:'Part 5 · Science Challenge', short:'Quiz', icon:'🏆', color:'#f5a623'},
+  {name:'Your Certificate', short:'Award', icon:'📜', color:'#6c4cf5'}
+];
+const BADGES = {
+  object:  {name:'Object Explorer',    icon:'🔍', why:'You know the difference between an object and a material!'},
+  material:{name:'Material Master',    icon:'🧪', why:'You met all six materials and found where they come from!'},
+  property:{name:'Property Detective', icon:'🕵️', why:'You can describe what materials are like!'},
+  mystery: {name:'Mystery Solver',     icon:'🎒', why:'You solved the mystery feely bag!'},
+  home:    {name:'Home Explorer',      icon:'🏠', why:'You hunted for materials in your home!'},
+  star:    {name:'Super Science Star', icon:'🌟', why:'You finished the Science Challenge!'}
+};
+const MAT_ORDER = ['wood','plastic','metal','glass','fabric','rock'];
+const MATS = {
+  wood:{name:'Wood', from:"Wood comes from <b>trees</b>. It is a natural material.", fromIc:'tree',
+    ex:[['table','Table'],['chair','Chair'],['pencil','Pencil'],['door','Door'],['boat','Boat'],['guitar','Guitar']],
+    props:['Hard','Strong','Can be cut and carved into shapes','Opaque – we cannot see through it'],
+    uses:"Furniture, doors, pencils, boats, guitars – and even paper!",
+    fact:"Wood comes from trees! Some trees are very, very old.", ask:"Can you find something wooden in your room?"},
+  plastic:{name:'Plastic', from:"Plastic is made by people in factories, mostly from <b>oil</b>.", fromIc:'oil',
+    ex:[['bottle','Bottle'],['blocks','Toy blocks'],['lunchbox','Lunchbox'],['bucket','Bucket'],['ruler','Ruler'],['ball','Ball']],
+    props:['Can be hard or soft','Some plastics bend','Many plastics are waterproof','Easy to wash'],
+    uses:"Bottles, toys, lunchboxes, buckets and bags.",
+    fact:"Your favourite toys might be made of plastic!", ask:"Is your water bottle made of plastic?"},
+  metal:{name:'Metal', from:"Metal comes from <b>rocks</b> dug out of the ground. The rocks are heated in a factory to get the metal out.", fromIc:'ore',
+    ex:[['spoon','Spoon'],['key','Keys'],['pot','Cooking pot'],['coins','Coins'],['fork','Fork'],['car','Car']],
+    props:['Hard','Strong','Often shiny','Can feel cold'],
+    uses:"Spoons, forks, keys, pots, cars, tools, gates and buildings.",
+    fact:"Many keys and spoons are made from metal!", ask:"Can you find a metal object nearby?"},
+  glass:{name:'Glass', from:"Glass is made from very fine <b>sand</b>. The sand is heated until it melts!", fromIc:'sand',
+    ex:[['glasscup','Drinking glass'],['window','Window'],['jar','Jar'],['glassbottle','Bottle'],['bulb','Light bulb'],['specs','Glasses']],
+    props:['Transparent – we can see through it','Hard','Smooth','Can break easily'],
+    uses:"Windows, jars, bottles, drinking glasses and spectacles.",
+    fact:"We can see outside through a glass window!", ask:"Can you see through a clear glass window?", demo:'screen',
+    safety:"Glass can break and be sharp. Never touch broken glass – always tell a grown-up!"},
+  fabric:{name:'Fabric', from:"Fabric comes from <b>plants</b> (like cotton) and <b>animals</b> (like sheep's wool).", fromIc:'sheep',
+    ex:[['tshirt','T-shirt'],['socks','Socks'],['towel','Towel'],['curtains','Curtains'],['blanket','Blanket'],['hat','Woolly hat']],
+    props:['Usually soft','Light and warm','Some fabrics stretch','Many fabrics soak up water'],
+    uses:"Clothes, towels, curtains, blankets and bags.",
+    fact:"Your clothes and your favourite blanket are probably made from fabric!", ask:"Can you find something made from fabric?", demo:'soak'},
+  rock:{name:'Rock / Stone', from:"Rocks and stones come from <b>nature</b>. They are found in the ground.", fromIc:'rock',
+    ex:[['pebbles','Pebbles'],['rock','Big rock'],['wall','Stone wall'],['steps','Stone steps'],['brick','Bricks (made from clay)']],
+    props:['Hard','Strong','Heavy','Can be rough or smooth'],
+    uses:"Walls, steps, paths, roads and buildings.",
+    fact:"Some rocks are millions of years old!", ask:"Have you ever seen a rock in a garden?"}
+};
+const PROP_EMOJI = {hard:'🔨',soft:'☁️',waterproof:'☔',absorbent:'💧',flexible:'〰️',stretchy:'↔️',transparent:'👀',opaque:'🙈',
+  shiny:'✨',dull:'🌫️',smooth:'🥚',rough:'🧱',rigid:'📏',strong:'💪',cold:'❄️',warm:'🧣',heavy:'🏋️',squashy:'👐',light:'🎈',bouncy:'⚽'};
+
+/* =========================================================
+   3. STATE – saved to localStorage so a refresh never breaks
+   ========================================================= */
+const KEY = 'y1-everyday-materials-v1';
+const fresh = () => ({step:0,max:0,stars:0,badges:[],done:{},explored:[],hunt:{},huntExtra:'',name:'',sound:true,voice:false,quiz:null,compared:[]});
+function load(){
+  try{
+    const d = JSON.parse(localStorage.getItem(KEY));
+    if(d && typeof d==='object') return Object.assign(fresh(), d);
+  }catch(e){}
+  return fresh();
+}
+let S = load();
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+
+/* =========================================================
+   4. SMALL HELPERS
+   ========================================================= */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+const PRAISE = ['Brilliant!','Well done!','Super science!','Fantastic!','You got it!','Amazing!','Great thinking!'];
+const praise = () => PRAISE[Math.floor(Math.random()*PRAISE.length)];
+function ico(name){
+  const c = IC[name]; if(!c) return '';
+  return `<svg viewBox="0 0 100 100" class="ico" aria-hidden="true"><g stroke="#3d3040" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">${c}</g></svg>`;
+}
+function matChar(m, size=''){ return `<span class="matc sw-${m} ${size}" aria-hidden="true"><span class="face"><i></i><i></i><b></b></span></span>`; }
+function pic(x){ return x && x.indexOf('mat:')===0 ? matChar(x.slice(4)) : ico(x); }
+function icoS(name, cls='ico-s'){ return `<span class="${cls}">${pic(name)}</span>`; }
+function onActivate(el, fn){
+  el.addEventListener('click', fn);
+  el.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){ e.preventDefault(); fn(e); } });
+}
+
+/* ---------- Sound effects (Web Audio, no files needed) ---------- */
+let actx = null;
+function tone(freqs, dur=0.12, type='sine', vol=0.16){
+  if(!S.sound) return;
+  try{
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    const t0 = actx.currentTime;
+    freqs.forEach((f,i)=>{
+      const o=actx.createOscillator(), g=actx.createGain(), t=t0+i*dur;
+      o.type=type; o.frequency.value=f;
+      g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+      o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t+dur+0.03);
+    });
+  }catch(e){}
+}
+const sfx = {
+  good:()=>tone([660,880],0.11), bad:()=>tone([330,260],0.14,'triangle',0.12),
+  win:()=>tone([523,659,784,1047],0.13), pop:()=>tone([520],0.07,'triangle',0.12), whoosh:()=>tone([300,500,700],0.06,'sine',0.08)
+};
+
+/* ---------- Read aloud (speech synthesis, optional) ---------- */
+function speak(html){
+  try{
+    if(!('speechSynthesis' in window)) return;
+    speechSynthesis.cancel();
+    const txt = String(html).replace(/<[^>]+>/g,' ').replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B50}\u{FE0F}]/gu,'').replace(/\s+/g,' ').trim();
+    if(!txt) return;
+    const u = new SpeechSynthesisUtterance(txt);
+    u.rate = 0.9; u.pitch = 1.1; u.lang = 'en-GB';
+    const v = speechSynthesis.getVoices().find(v => /en-GB/i.test(v.lang));
+    if(v) u.voice = v;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+/* ---------- Rewards: stars, confetti, badges ---------- */
+function addStars(n=1, fromEl){
+  S.stars += n; save(); updateHud();
+  const chip = $('#starsBtn'); chip.classList.remove('bump'); void chip.offsetWidth; chip.classList.add('bump');
+  if(fromEl && fromEl.getBoundingClientRect){
+    const r = fromEl.getBoundingClientRect();
+    const s = document.createElement('div'); s.className='float-star'; s.textContent='⭐';
+    s.style.left = (r.left + r.width/2 - 17) + 'px'; s.style.top = (r.top + 4) + 'px';
+    document.body.appendChild(s); setTimeout(()=>s.remove(), 1200);
+  }
+}
+function confetti(n=60){
+  if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const cols=['#ff5a5a','#ffd23f','#3fa9f5','#7ed957','#ff5fa2','#6c4cf5','#ff8a3d'];
+  for(let i=0;i<n;i++){
+    const c=document.createElement('div'); c.className='confetti';
+    c.style.left=Math.random()*100+'vw'; c.style.background=cols[i%cols.length];
+    c.style.setProperty('--dx',(Math.random()*160-80)+'px'); c.style.setProperty('--r',(Math.random()*900)+'deg');
+    c.style.animationDuration=(1.8+Math.random()*1.6)+'s'; c.style.animationDelay=(Math.random()*0.4)+'s';
+    document.body.appendChild(c); setTimeout(()=>c.remove(), 4200);
+  }
+}
+function badgeHTML(id, off=false){ const b=BADGES[id]; return `<span class="badge ${off?'off':''}"><span class="bi">${b.icon}</span>${b.name}</span>`; }
+function giveBadge(id){
+  if(S.badges.includes(id)) return;
+  S.badges.push(id); save(); updateHud();
+  sfx.win(); confetti(80);
+  const b = BADGES[id];
+  openModal(`<div class="badge-pop"><h2 style="color:var(--primary);font-size:30px">New badge!</h2>
+    <div style="margin:16px 0">${badgeHTML(id).replace('class="badge "','class="badge"')}</div>
+    <p style="font-size:22px">${b.why}</p>
+    <div class="row-btns"><button class="btn primary big" data-close>Hooray! ⭐</button></div></div>`);
+  if(S.voice) speak('New badge! ' + b.name + '. ' + b.why);
+}
+
+/* ---------- Modal + toast ---------- */
+function openModal(html, onClose){
+  closeModal();
+  const ov = document.createElement('div'); ov.className='overlay'; ov.id='overlay';
+  ov.innerHTML = `<div class="modal" role="dialog" aria-modal="true"><button class="x" data-close aria-label="Close">✕</button>${html}</div>`;
+  document.body.appendChild(ov);
+  const close = () => { closeModal(); if(onClose) onClose(); };
+  ov.addEventListener('click', e => { if(e.target===ov || e.target.closest('[data-close]')) close(); });
+  ov._close = close;
+  const f = $('.modal [data-close].btn', ov) || $('.modal .x', ov); if(f) f.focus();
+  return $('.modal', ov);
+}
+function closeModal(){ const o=$('#overlay'); if(o) o.remove(); }
+let toastT;
+function toast(msg){
+  const old=$('.toast'); if(old) old.remove();
+  const t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t);
+  clearTimeout(toastT); toastT=setTimeout(()=>t.remove(), 2600);
+}
+
+/* ---------- Drag & drop that works with mouse AND touch ----------
+   A short press without moving counts as a tap (click-to-select),
+   so every drag activity also has a touch-friendly alternative. */
+function makeDraggable(node, {dropSel, onDrop, onTap}){
+  node.addEventListener('pointerdown', e => {
+    if(e.pointerType==='mouse' && e.button!==0) return;
+    if(node.disabled || node.classList.contains('placed') || node.classList.contains('done')) return;
+    const sx=e.clientX, sy=e.clientY, id=e.pointerId; let ghost=null, ox=0, oy=0;
+    const move = ev => {
+      if(ev.pointerId!==id) return;
+      if(!ghost && Math.hypot(ev.clientX-sx, ev.clientY-sy) > 10){
+        const r=node.getBoundingClientRect(); ox=sx-r.left; oy=sy-r.top;
+        ghost=node.cloneNode(true); ghost.classList.add('drag-ghost'); ghost.classList.remove('sel');
+        ghost.style.width=r.width+'px'; document.body.appendChild(ghost); node.classList.add('dragging');
+      }
+      if(ghost){
+        ev.preventDefault();
+        ghost.style.left=(ev.clientX-ox)+'px'; ghost.style.top=(ev.clientY-oy)+'px';
+        const t=document.elementFromPoint(ev.clientX, ev.clientY); const z=t && t.closest(dropSel);
+        $$('.drop-hover').forEach(x => { if(x!==z) x.classList.remove('drop-hover'); });
+        if(z) z.classList.add('drop-hover');
+      }
+    };
+    const up = ev => {
+      if(ev.pointerId!==id) return;
+      window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up);
+      $$('.drop-hover').forEach(x => x.classList.remove('drop-hover'));
+      if(ghost){
+        ghost.remove(); node.classList.remove('dragging');
+        if(ev.type==='pointerup'){ const t=document.elementFromPoint(ev.clientX, ev.clientY); const z=t && t.closest(dropSel); if(z) onDrop(z); }
+      } else if(ev.type==='pointerup' && onTap) onTap();
+    };
+    window.addEventListener('pointermove', move, {passive:false});
+    window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
+  });
+  node.addEventListener('keydown', e => { if((e.key==='Enter'||e.key===' ') && onTap){ e.preventDefault(); onTap(); } });
+}
+
+/* =========================================================
+   5. REUSABLE WIDGETS
+   ========================================================= */
+/* Multiple-choice question for learning (retries allowed, answer never shown before trying again) */
+function mcq(box, {q, opts, explain, hint, onCorrect, keepOrder}){
+  const options = keepOrder ? opts : shuffle(opts);
+  box.innerHTML = `<div class="mcq">${q?`<p class="q">${q}</p>`:''}<div class="opts">${options.map((o,i)=>`<button class="opt" data-i="${i}">${o.pic?`<span class="opt-pic">${pic(o.pic)}</span>`:''}<span>${o.t}</span></button>`).join('')}</div><div class="fb" aria-live="polite"></div></div>`;
+  let tries=0, solved=false; const fb=$('.fb', box);
+  $$('.opt', box).forEach(b => b.addEventListener('click', () => {
+    if(solved) return;
+    const o = options[+b.dataset.i]; tries++;
+    if(o.ok){
+      solved=true; b.classList.add('right'); $$('.opt', box).forEach(x => x.disabled=true);
+      fb.className='fb good'; fb.innerHTML=`<b>${praise()} 🎉</b>${explain||''}`; sfx.good();
+      if(tries===1) addStars(1, b);
+      if(S.voice) speak(praise()+' '+(explain||''));
+      if(onCorrect) onCorrect(tries===1);
+    } else {
+      b.classList.add('wrong'); b.disabled=true; sfx.bad();
+      fb.className='fb try'; fb.innerHTML=`<b>Good try! Let's think again. 🤔</b>${o.why||hint||'Have another look and try again.'}`;
+    }
+  }));
+}
+
+/* ---------- Animated demonstrations ---------- */
+function playDemo(scope, ms, after){
+  scope.classList.remove('go'); void scope.offsetWidth; scope.classList.add('go');
+  setTimeout(after, ms);
+}
+function makeDrops(n=6){
+  let h=''; for(let i=0;i<n;i++) h+=`<span class="drop" style="left:${16+i*13}%;--d:${(i*0.13).toFixed(2)}s;--x:${i%2?55:-55}px"></span>`;
+  return `<div class="drops">${h}</div>`;
+}
+const DEMOS = {
+  /* Press: hard things stay the same, soft things squash */
+  press(box, cfg, done){
+    box.innerHTML = `<div class="dgrid">${cfg.items.map(it=>`<div class="dcell"><div class="finger">👇</div><div class="obj ${it.soft?'squish':'firm'}">${ico(it.ic)}</div><b>${it.label}</b><p class="res"></p></div>`).join('')}</div><div class="row-btns"><button class="btn orange dgo">👇 Press them!</button></div>`;
+    const grid=$('.dgrid',box);
+    $('.dgo',box).onclick = () => { $$('.res',box).forEach(r=>r.textContent=''); sfx.whoosh(); playDemo(grid, 1400, () => { $$('.res',box).forEach((r,i)=>r.textContent=cfg.items[i].res); done(); }); };
+  },
+  /* Rain: waterproof things let water roll off */
+  rain(box, cfg, done){
+    box.innerHTML = `<div class="dgrid">${cfg.items.map(it=>`<div class="dcell ${it.repel?'repel':'leak'}">${makeDrops()}<div class="obj">${ico(it.ic)}</div><b>${it.label}</b><p class="res"></p></div>`).join('')}</div><div class="row-btns"><button class="btn orange dgo">🌧️ Make it rain!</button></div>`;
+    const grid=$('.dgrid',box);
+    $('.dgo',box).onclick = () => { $$('.dcell',box).forEach(c=>c.classList.remove('wet')); $$('.res',box).forEach(r=>r.textContent=''); playDemo(grid, 1900, () => {
+      $$('.dcell',box).forEach((c,i)=>{ if(!cfg.items[i].repel) c.classList.add('wet'); $('.res',c).textContent=cfg.items[i].res; }); done(); }); };
+  },
+  /* Soak: absorbent things soak up a puddle */
+  soak(box, cfg, done){
+    box.innerHTML = `<div class="dgrid">${cfg.items.map(it=>`<div class="dcell soak ${it.absorb?'absorb':''}"><div class="obj mover">${ico(it.ic)}</div><div class="puddle"></div><b>${it.label}</b><p class="res"></p></div>`).join('')}</div><div class="row-btns"><button class="btn orange dgo">💧 Put them in the water!</button></div>`;
+    $('.dgo',box).onclick = () => { const cells=$$('.dcell',box); $$('.res',box).forEach(r=>r.textContent='');
+      cells.forEach(c=>{ c.classList.remove('go'); void c.offsetWidth; c.classList.add('go'); });
+      setTimeout(()=>{ cells.forEach((c,i)=>$('.res',c).textContent=cfg.items[i].res); done(); }, 2000); };
+  },
+  /* Bend & stretch */
+  bend(box, cfg, done){
+    box.innerHTML = `<div class="dgrid">
+      <div class="dcell"><div class="obj stretch">${ico('rubberband')}</div><b>Rubber band</b><p class="res"></p></div>
+      <div class="dcell"><div class="strip bendy"><i></i><i></i></div><b>Plastic strip</b><p class="res"></p></div>
+      <div class="dcell"><div class="strip woodr"><i></i><i></i></div><b>Wooden ruler</b><p class="res"></p></div>
+    </div><div class="row-btns"><button class="btn orange dgo">💪 Pull and bend!</button></div>`;
+    const grid=$('.dgrid',box), res=['Stretch… and back! STRETCHY','It bends! FLEXIBLE',"It won't bend. RIGID"];
+    $('.dgo',box).onclick = () => { $$('.res',box).forEach(r=>r.textContent=''); sfx.whoosh(); playDemo(grid, 1800, () => { $$('.res',box).forEach((r,i)=>r.textContent=res[i]); done(); }); };
+  },
+  /* Screen: slide a material in front of Teddy */
+  screen(box, cfg, done){
+    box.innerHTML = `<div class="screen-stage"><div class="teddy">${ico('teddy')}</div><div class="panel"></div></div>
+      <p class="screen-res" aria-live="polite">Teddy is waiting! 🧸</p>
+      <div class="row-btns">${cfg.panels.map((p,i)=>`<button class="btn ${i?'ghost':'orange'} pbtn" data-i="${i}">Slide in ${p.label}</button>`).join('')}<button class="btn ghost pout">Take it away</button></div>`;
+    const panel=$('.panel',box), res=$('.screen-res',box);
+    $$('.pbtn',box).forEach(b => b.onclick = () => {
+      const p=cfg.panels[+b.dataset.i]; panel.className='panel k-'+p.kind; void panel.offsetWidth; panel.classList.add('in'); sfx.whoosh();
+      res.textContent='…';
+      setTimeout(()=>{ res.innerHTML = p.see ? `I can still see Teddy! ${p.label} is <b>TRANSPARENT</b>. 👀` : `Where is Teddy? We can't see him! ${p.label} is <b>OPAQUE</b>. 🙈`; done(); }, 950);
+    });
+    $('.pout',box).onclick = () => { panel.classList.remove('in'); res.textContent='Peek-a-boo! There is Teddy! 🧸'; };
+  }
+};
+
+/* ---------- Teacher's help block ---------- */
+function teachHTML(t){
+  return `<details class="teach"><summary>👩‍🏫 Teacher's Help</summary><div class="tb"><dl>
+    ${t.ask?`<dt>Ask the child:</dt><dd>${t.ask}</dd>`:''}
+    ${t.expect?`<dt>Expected response:</dt><dd>${t.expect}</dd>`:''}
+    ${t.struggle?`<dt>If the child struggles:</dt><dd>${t.struggle}</dd>`:''}
+    ${t.demo?`<dt>Real-world demonstration:</dt><dd>${t.demo}</dd>`:''}
+    ${t.extra?`<dt>Extra:</dt><dd>${t.extra}</dd>`:''}
+  </dl></div></details>`;
+}
+
+/* =========================================================
+   6. PROPERTY DATA (Part 3)
+   ========================================================= */
+const PROPS = [
+  {id:'hard', word:'HARD', emoji:'🔨', color:'#6c4cf5', def:'Hard things are difficult to press, bend or squash.',
+   ex:[['rock','Stone'],['spoon','Metal spoon'],['woodblock','Wooden block']],
+   predict:'🤔 What do you think will happen when we press the rock and the pillow?',
+   demo:{type:'press', items:[{ic:'rock',label:'Rock',soft:false,res:"It won't squash. HARD!"},{ic:'pillow',label:'Pillow',soft:true,res:'Squish! SOFT.'}]},
+   q:{q:'Which one is hard?', opts:[{t:'A rock',pic:'rock',ok:true},{t:'A pillow',pic:'pillow',why:'A pillow squashes when we press it. Which one stays the same?'}], explain:'A rock is hard. We cannot squash it!'},
+   teach:{ask:'Press on the table, then press on a cushion. What is different?', expect:'The table does not squash – it is hard. The cushion squashes – it is soft.', struggle:'Let the child press a metal spoon and a sponge with their thumb and say "hard" or "soft" for each.', demo:'Collect a wooden block, a metal spoon, a stone and a pillow. Sort them into "hard" and "soft".'}},
+  {id:'soft', word:'SOFT', emoji:'☁️', color:'#ff5fa2', def:'Soft things feel gentle when we touch them. They can often be squashed a little.',
+   ex:[['pillow','Pillow'],['cotton','Cotton wool'],['blanket','Blanket'],['teddy','Soft toy']],
+   predict:'🤔 What will happen when we squeeze the teddy and the spoon?',
+   demo:{type:'press', items:[{ic:'teddy',label:'Teddy bear',soft:true,res:'Squish! SOFT and cuddly.'},{ic:'spoon',label:'Metal spoon',soft:false,res:"It won't squash. HARD!"}]},
+   q:{q:'Which one is soft?', opts:[{t:'A teddy bear',pic:'teddy',ok:true},{t:'A metal spoon',pic:'spoon',why:'A metal spoon does not squash. Which one feels cuddly?'}], explain:'A teddy bear is soft and squashy!'},
+   teach:{ask:'Can you find something soft in this room?', expect:'A cushion, a jumper, a teddy, a blanket…', struggle:'Close their eyes and let them feel a soft toy and a wooden block. Which one is soft?', demo:'Squeeze a cotton wool ball and a pebble side by side.'}},
+  {id:'waterproof', word:'WATERPROOF', emoji:'☔', color:'#3fa9f5', def:'Waterproof means water cannot easily pass through the material.',
+   ex:[['raincoat','Raincoat'],['bottle','Plastic bottle'],['umbrella','Umbrella'],['duck','Rubber duck']],
+   predict:'🤔 What do you think will happen when it rains on the raincoat and the paper towel?',
+   demo:{type:'rain', items:[{ic:'raincoat',label:'Raincoat',repel:true,res:'Water rolls off! WATERPROOF'},{ic:'papertowel',label:'Paper towel',repel:false,res:'Soggy! Not waterproof.'}]},
+   q:{q:'Which would help keep you dry in the rain?', opts:[{t:'A raincoat',pic:'raincoat',ok:true},{t:'A paper towel',pic:'papertowel',why:'Did you see? The paper towel got soggy! Which one let the water roll off?'}], explain:'A raincoat is waterproof. The rain rolls off and you stay dry!'},
+   teach:{ask:'Why do we wear a raincoat and wellies when it rains?', expect:'Because they are waterproof – they keep the water out.', struggle:'Drip water onto a plastic bag and onto a tissue. Which one keeps the water out?', demo:'Use a pipette or spoon to drip water on a plastic bag, foil, a tissue and a cotton sock.'}},
+  {id:'absorbent', word:'ABSORBENT', emoji:'💧', color:'#1fa968', def:'Absorbent materials soak up water.',
+   ex:[['sponge','Sponge'],['towel','Towel'],['papertowel','Kitchen roll'],['tshirt','Cotton T-shirt']],
+   predict:'🤔 What will happen to the puddles when we put the sponge and the bottle in them?',
+   demo:{type:'soak', items:[{ic:'sponge',label:'Sponge',absorb:true,res:'Slurp! The water is gone. ABSORBENT'},{ic:'bottle',label:'Plastic bottle',absorb:false,res:'The puddle is still there.'}]},
+   note:'💡 <b>Absorbent</b> is the opposite of <b>waterproof</b>! A sponge soaks water up. A raincoat keeps water out.',
+   q:{q:'Which one soaks up water?', opts:[{t:'A sponge',pic:'sponge',ok:true},{t:'A plastic bottle',pic:'bottle',why:'The puddle stayed under the bottle. Which one made the water disappear?'}], explain:'A sponge is absorbent. It soaks up water!'},
+   teach:{ask:'What do we use to dry ourselves after a bath? Why?', expect:'A towel, because it is absorbent – it soaks up water.', struggle:'Put a sponge and a plastic lid into a shallow dish of water. Lift them out – which one held the water?', demo:'Booklet activity: find a towel, kitchen roll, a mop, a kitchen sponge and a bath mat. Talk about why each one needs to be absorbent.'}},
+  {id:'flexible', word:'FLEXIBLE & STRETCHY', emoji:'〰️', color:'#ff8a3d', def:'Flexible materials can bend. Stretchy materials can stretch and go back to their shape.',
+   ex:[['rubberband','Rubber band'],['socks','Stretchy socks'],['ruler','Bendy plastic ruler'],['woodruler','Wooden ruler (rigid)']],
+   predict:'🤔 Which ones will bend or stretch? Which one will stay the same?',
+   demo:{type:'bend'},
+   note:'💡 <b>Flexible</b> = it can bend. <b>Stretchy</b> = it gets longer, then springs back. They are friends, but not exactly the same! Things that will not bend are <b>RIGID</b>.',
+   q:{q:'Which one can stretch?', opts:[{t:'A rubber band',pic:'rubberband',ok:true},{t:'A stone',pic:'rock',why:'A stone is hard and rigid. Which one got longer and sprang back?'}], explain:'A rubber band is stretchy. It stretches and springs back!'},
+   teach:{ask:'What happens when you pull a rubber band? What happens when you let go?', expect:'It gets longer (stretches), then goes back to its shape.', struggle:'Gently bend a plastic ruler and a wooden ruler. Pull the cuff of a sock. Use the words bend and stretch.', demo:'Compare a rubber band, a sock, a plastic ruler and a pencil. Which bend? Which stretch? Which are rigid?'}},
+  {id:'transparent', word:'TRANSPARENT', emoji:'👀', color:'#00a5b8', def:'Transparent materials let light through, so we can see clearly through them.',
+   ex:[['glasscup','Clear glass'],['window','Window'],['bottle','Clear plastic'],['specs','Glasses']],
+   predict:'🤔 If we put clear glass in front of Teddy, will we still see him?',
+   demo:{type:'screen', panels:[{kind:'glass',label:'clear glass',see:true},{kind:'plastic',label:'clear plastic',see:true}]},
+   note:'💡 Another word for transparent is <b>see-through</b>.',
+   q:{q:'Can you see through clear glass?', keepOrder:true, opts:[{t:'Yes! 👍',ok:true},{t:'No 👎',why:'Look at the experiment again – could you still see Teddy behind the glass?'}], explain:'Yes! Clear glass is transparent. We can see through it.'},
+   teach:{ask:'What can you see through the window?', expect:'Trees, the sky, cars… because glass is transparent.', struggle:'Hold a clear plastic bottle in front of your face and wave. Then hold a book in front of your face.', demo:'Place a toy behind a clear glass jar (adult handles the glass), then behind a cereal box.'}},
+  {id:'opaque', word:'OPAQUE', emoji:'🙈', color:'#8b5a2b', def:'Opaque materials do not let us see through them.',
+   ex:[['door','Wooden door'],['box','Cardboard'],['book','Book'],['wall','Wall']],
+   predict:'🤔 What will happen if we put a wooden door in front of Teddy?',
+   demo:{type:'screen', panels:[{kind:'wood',label:'the wooden door',see:false},{kind:'card',label:'cardboard',see:false}]},
+   note:'💡 <b>Opaque</b> is the opposite of <b>transparent</b>.',
+   q:{q:'Can you see through a wooden door?', keepOrder:true, opts:[{t:'Yes 👍',why:'When the door slid in front of Teddy, could you still see him?'},{t:'No! 👎',ok:true}], explain:'No! A wooden door is opaque. We cannot see through it.'},
+   teach:{ask:'Can you see me if I stand behind the door?', expect:'No, because the door is opaque.', struggle:'Play peek-a-boo with a book and then with a clear plastic sheet.', demo:'Shine a torch through a window, a book and a piece of cardboard. Which let the light through?'}}
+];
+
+/* Comparison board data */
+const CMP = {
+  glass:{name:'Glass',pic:'glasscup',m:'glass',p:['hard','transparent','smooth','waterproof']},
+  wood:{name:'Wood',pic:'woodblock',m:'wood',p:['hard','opaque','rough','strong']},
+  sponge:{name:'Sponge',pic:'sponge',m:'sponge',p:['soft','absorbent','squashy','opaque']},
+  plastic:{name:'Plastic',pic:'bottle',m:'plastic',p:['waterproof','smooth','flexible','light']},
+  metal:{name:'Metal',pic:'spoon',m:'metal',p:['hard','shiny','strong','cold']},
+  fabric:{name:'Fabric',pic:'tshirt',m:'fabric',p:['soft','flexible','absorbent','warm']},
+  stone:{name:'Stone',pic:'rock',m:'rock',p:['hard','rough','heavy','opaque']},
+  rubber:{name:'Rubber',pic:'rubberband',m:'rubber',p:['stretchy','flexible','waterproof','bouncy']}
+};
+const PAIRS = [['glass','wood'],['sponge','plastic'],['metal','fabric'],['stone','rubber']];
+
+/* =========================================================
+   7. GAME DATA (Part 4)
+   ========================================================= */
+const SORT_ITEMS = [
+  {t:'Chair',z:'obj',p:'chair'},{t:'Plastic',z:'mat',p:'mat:plastic'},{t:'Spoon',z:'obj',p:'spoon'},{t:'Wood',z:'mat',p:'mat:wood'},
+  {t:'Glass',z:'mat',p:'mat:glass'},{t:'Shirt',z:'obj',p:'tshirt'},{t:'Metal',z:'mat',p:'mat:metal'},{t:'Table',z:'obj',p:'table'},
+  {t:'Stone',z:'mat',p:'mat:rock'},{t:'Bottle',z:'obj',p:'bottle'}
+];
+const MYSTERY = [
+  {clues:['I am hard.','I am transparent.','You can see through me.'], ans:'Glass', reveal:'glasscup', opts:[['Wood','mat:wood'],['Glass','mat:glass'],['Fabric','mat:fabric']], say:'It was a drinking GLASS!'},
+  {clues:['I am soft.','I can soak up water.','You might use me after a bath.'], ans:'Fabric', reveal:'towel', opts:[['Metal','mat:metal'],['Fabric','mat:fabric'],['Stone','mat:rock']], say:'It was a fluffy FABRIC towel!'},
+  {clues:['I am hard.','I can be shiny.','You might find me in a spoon.'], ans:'Metal', reveal:'spoon', opts:[['Metal','mat:metal'],['Cotton','cotton'],['Sponge','sponge']], say:'It was a METAL spoon!'},
+  {clues:['I come from trees.','I can be used to make tables.'], ans:'Wood', reveal:'table', opts:[['Wood','mat:wood'],['Plastic','mat:plastic'],['Glass','mat:glass']], say:'It was WOOD – like this table!'},
+  {clues:['I can bend.','I can be waterproof.','I might be used to make a raincoat.'], ans:'Plastic', reveal:'raincoat', opts:[['Stone','mat:rock'],['Plastic','mat:plastic'],['Glass','mat:glass']], say:'It was PLASTIC – like a raincoat!'},
+  {clues:['I come from nature.','I am very hard and heavy.','I can be used to build garden walls.'], ans:'Rock', reveal:'wall', opts:[['Fabric','mat:fabric'],['Plastic','mat:plastic'],['Rock / Stone','mat:rock']], say:'It was STONE – like a garden wall!'},
+  {clues:['I am made from very fine sand.','I am heated until I melt.','Windows are made from me.'], ans:'Glass', reveal:'window', opts:[['Glass','mat:glass'],['Wood','mat:wood'],['Metal','mat:metal']], say:'It was GLASS – like a window!'},
+  {clues:['I come from sheep.','I am soft and warm.','I can be made into a woolly hat.'], ans:'Fabric', reveal:'hat', opts:[['Metal','mat:metal'],['Glass','mat:glass'],['Fabric (wool)','mat:fabric']], say:'It was WOOL FABRIC – a cosy woolly hat!'},
+  {clues:['I feel smooth.','I feel hard and cold.','I am rigid – I do not bend.'], ans:'Metal', reveal:'key', opts:[['Woolly scarf','mat:fabric'],['Sponge','sponge'],['Metal','mat:metal']], say:'It was a METAL key – smooth, hard and cold!'},
+  {clues:['People make me in factories.','I am made mostly from oil.','Lots of toys and bottles are made from me.'], ans:'Plastic', reveal:'blocks', opts:[['Rock','mat:rock'],['Plastic','mat:plastic'],['Wood','mat:wood']], say:'It was PLASTIC – like these toy blocks!'}
+];
+const HUNT = [
+  {m:'wood', ex:'pencil', s:['Table','Chair','Door','Pencil','Wooden spoon','Bookshelf']},
+  {m:'plastic', ex:'bottle', s:['Water bottle','Toy','Lunchbox','Bucket','Ruler','Toothbrush']},
+  {m:'metal', ex:'spoon', s:['Spoon','Fork','Key','Cooking pot','Coin','Door handle']},
+  {m:'glass', ex:'window', s:['Window','Mirror','Drinking glass','Jar','Glasses','Light bulb']},
+  {m:'fabric', ex:'tshirt', s:['T-shirt','Socks','Towel','Curtains','Blanket','Teddy']},
+  {m:'rock', ex:'pebbles', s:['Garden stones','Pebbles','Stone wall','Stone steps','Stone path','Worktop']}
+];
+const PCARDS = [['hard','Hard','🔨'],['soft','Soft','☁️'],['waterproof','Waterproof','☔'],['absorbent','Absorbent','💧'],['flexible','Flexible / Stretchy','〰️'],['transparent','Transparent','👀'],['opaque','Opaque','🙈']];
+const PMATCH = [
+  {t:'Sponge',p:'sponge',ok:['absorbent','soft','flexible','opaque'],hint:'What happens when a sponge goes in water?'},
+  {t:'Clear window',p:'window',ok:['transparent','hard'],hint:'What can you see through a clear window?'},
+  {t:'Stone',p:'rock',ok:['hard','opaque'],hint:'Can you squash a stone?'},
+  {t:'Pillow',p:'pillow',ok:['soft','flexible','opaque'],hint:'How does a pillow feel?'},
+  {t:'Raincoat',p:'raincoat',ok:['waterproof','flexible','opaque'],hint:'What does a raincoat do in the rain?'},
+  {t:'Rubber band',p:'rubberband',ok:['flexible','waterproof','opaque'],hint:'What happens when you pull a rubber band?'},
+  {t:'Wooden door',p:'door',ok:['opaque','hard'],hint:'Can you see through a wooden door?'},
+  {t:'Towel',p:'towel',ok:['absorbent','soft','flexible','opaque'],hint:'What does a towel do after a bath?'}
+];
+const TICK_COLS = [['bendy','Bendy'],['notbendy','Not bendy'],['transparent','Transparent'],['opaque','Opaque']];
+const TICK_ROWS = [
+  {t:'A wooden chair',p:'chair',ans:['notbendy','opaque']},
+  {t:'A glass window',p:'window',ans:['notbendy','transparent']},
+  {t:'A paper straw',p:'straw',ans:['bendy','opaque']},
+  {t:'A stick of chalk',p:'chalk',ans:['notbendy','opaque']},
+  {t:'A metal fork',p:'fork',ans:['notbendy','opaque']}
+];
+const LAB = [
+  {id:'paper',name:'Paper towel',sw:'paper',dry:false,res:'Soggy! The water went through. Teddy got wet.'},
+  {id:'fabric',name:'Cotton cloth',sw:'fabric',dry:false,res:'Drip, drip! The water soaked through. Teddy got wet.'},
+  {id:'plastic',name:'Plastic sheet',sw:'plastic',dry:true,res:'The water rolled off! Teddy stayed dry!'}
+];
+
+/* =========================================================
+   8. QUIZ (Part 5) – 16 questions, easy → harder
+   ========================================================= */
+const QUIZ = [
+  {type:'Object or material?', q:'What is a chair?', pic:'chair', keep:true, opts:[{t:'An object',ok:1},{t:'A material'}], why:'A chair is a thing we use – it is an OBJECT. It is made from a material, like wood.'},
+  {type:'Materials', q:'Which material comes from trees?', opts:[{t:'Wood',pic:'mat:wood',ok:1},{t:'Plastic',pic:'mat:plastic'},{t:'Metal',pic:'mat:metal'}], why:'Wood comes from trees. 🌳'},
+  {type:'Properties', q:'Which material is usually transparent (see-through)?', opts:[{t:'Stone',pic:'rock'},{t:'Clear glass',pic:'glasscup',ok:1},{t:'Wood',pic:'woodblock'}], why:'Clear glass lets us see through it. It is TRANSPARENT.'},
+  {type:'Properties', q:'What does ABSORBENT mean?', opts:[{t:'It soaks up water',pic:'sponge',ok:1},{t:'It stops all water',pic:'raincoat'},{t:'We can see through it',pic:'window'}], why:'Absorbent materials, like a sponge or a towel, soak up water.'},
+  {type:'Match the material', q:'Which material is often used to make a spoon?', pic:'spoon', opts:[{t:'Fabric',pic:'mat:fabric'},{t:'Metal',pic:'mat:metal',ok:1},{t:'Cotton wool',pic:'cotton'}], why:'Spoons are often made from METAL. It is hard, strong and easy to wash.'},
+  {type:'Properties', q:'Which one is soft?', opts:[{t:'A fabric pillow',pic:'pillow',ok:1},{t:'A stone',pic:'rock'},{t:'A metal key',pic:'key'}], why:'A pillow is made of soft fabric. It squashes when we press it.'},
+  {type:'Properties', q:'What does WATERPROOF mean?', opts:[{t:'It soaks up water',pic:'sponge'},{t:'Water cannot get through it',pic:'raincoat',ok:1},{t:'It can stretch',pic:'rubberband'}], why:'Waterproof means water cannot easily pass through – like a raincoat.'},
+  {type:'Materials', q:'Which material is used to make lots of clothes?', opts:[{t:'Fabric',pic:'mat:fabric',ok:1},{t:'Stone',pic:'mat:rock'},{t:'Glass',pic:'mat:glass'}], why:'T-shirts, socks and jumpers are made from FABRIC.'},
+  {type:'Picture spot', q:'Which object is made from plastic?', opts:[{t:'Plastic bottle',pic:'bottle',ok:1},{t:'Wooden chair',pic:'chair'},{t:'Metal key',pic:'key'}], why:'Many bottles are made from PLASTIC.'},
+  {type:'True or false?', q:'One object can be made from more than one material.', keep:true, opts:[{t:'True 👍',ok:1},{t:'False 👎'}], why:'True! A chair can have wooden legs, a plastic seat and metal screws.'},
+  {type:'Object or material?', q:'Is GLASS an object or a material?', pic:'mat:glass', keep:true, opts:[{t:'An object'},{t:'A material',ok:1}], why:'Glass is a MATERIAL. Windows and jars are objects made from glass.'},
+  {type:'Where does it come from?', q:'Glass is made from…', opts:[{t:'Sand',pic:'sand',ok:1},{t:'Trees',pic:'tree'},{t:"Sheep's wool",pic:'sheep'}], why:'Glass is made from very fine sand that is heated until it melts!'},
+  {type:'Opposites', q:'The opposite of WATERPROOF is…', opts:[{t:'Absorbent',pic:'sponge',ok:1},{t:'Hard',pic:'rock'},{t:'Shiny',pic:'spoon'}], why:'Waterproof keeps water out. Absorbent soaks water up!'},
+  {type:'True or false?', q:'A wooden door is transparent.', pic:'door', keep:true, opts:[{t:'True 👍'},{t:'False 👎',ok:1}], why:'False! We cannot see through a wooden door. It is OPAQUE.'},
+  {type:'Real life', q:'Teddy needs a coat for the rain. Which is best?', opts:[{t:'Paper',pic:'papertowel'},{t:'Waterproof plastic',pic:'raincoat',ok:1},{t:'Cotton towel',pic:'towel'}], why:'Plastic can be waterproof, so it keeps the rain out!'},
+  {type:'Opposites', q:'The opposite of DULL is…', opts:[{t:'Shiny',pic:'spoon',ok:1},{t:'Soft',pic:'pillow'},{t:'Rough',pic:'rock'}], why:'Shiny things, like a metal spoon, sparkle in the light.'}
+];
+function quizLevel(p){
+  if(p>=90) return ['🌟','Super Science Star!','You are a true science superstar!'];
+  if(p>=70) return ['🔬','Fantastic Scientist!','You really know your materials!'];
+  if(p>=50) return ['👏','Great Effort! Keep Exploring!','You are learning so much – keep going!'];
+  return ['🤗',"Let's Practise Together!",'Every scientist keeps practising. Let\'s review and try again!'];
+}
+
+/* =========================================================
+   9. THE STEPS – one screen each, grouped into chapters
+   ========================================================= */
+const STEPS = [
+/* ---------------- WELCOME ---------------- */
+{id:'welcome', ch:0, title:'', render(b){
+  const back = S.max>0;
+  b.innerHTML = `<div class="welcome">
+    <div class="w-mascot">${MASCOT}</div>
+    <h1>The Everyday Materials<br>Science Adventure</h1>
+    <p class="sub">Hello! I'm <b>Professor Pip</b>. Come into my lab and become a <b>Little Scientist</b>! 🔬</p>
+    <div class="lab-shelf">${MAT_ORDER.map(m=>matChar(m)).join('')}</div>
+    <div class="name-box"><label for="nm" style="font-weight:600">What is your name, scientist?</label><input id="nm" maxlength="24" placeholder="Type your name" value="${esc(S.name)}" autocomplete="off"></div>
+    <div class="row-btns"><button class="btn primary big" id="go">${back?'Continue my adventure ▶':"Let's start! ▶"}</button>${back?'<button class="btn ghost" id="again">Start again</button>':''}</div>
+    <div class="map">
+      <div><b>🔍</b>Objects &amp; Materials</div><div><b>🧪</b>Meet 6 Materials</div><div><b>🕵️</b>Property Detective</div>
+      <div><b>🎮</b>Science Games</div><div><b>🏆</b>Science Challenge</div><div><b>📜</b>Your Certificate</div>
+    </div></div>`;
+  $('#nm',b).addEventListener('input', e => { S.name = e.target.value.trim().slice(0,24); save(); });
+  $('#go',b).onclick = () => { if(back) goTo(S.max); else next(); };
+  if(back) $('#again',b).onclick = askRestart;
+},
+ teach:{ask:'What do you think a scientist does?', expect:'Looks closely, asks questions, tries things out, finds out.', demo:'Before you start, gather: a wooden pencil, a plastic bottle, a metal spoon, a fabric cloth, a stone, a sponge and a glass jar (adult handles the glass).', extra:'Use the 🔊 button on each page to hear the words read aloud, and 🗣️ in the top bar to read every page automatically. Progress is saved on this device.'}},
+
+/* ---------------- PART 1: OBJECTS & MATERIALS ---------------- */
+{id:'p1-see', ch:1, gate:true, title:'What can you see?',
+ say:"Look at this picture, Little Scientist. What can you see?",
+ render(b){
+  b.innerHTML = `<div class="hero-pic">${ico('chair')}</div><div class="qb"></div><div class="rv"></div>`;
+  mcq($('.qb',b), {q:'Tap the right answer:', opts:[{t:'A chair',pic:'chair',ok:true},{t:'A car',pic:'car',why:'A car has wheels. Look at the picture again!'},{t:'A ball',pic:'ball',why:'A ball is round. Look at the picture again!'}],
+    explain:'It is a chair!', onCorrect(){ $('.rv',b).innerHTML = `<p class="big-say pop-in">This is a <b>CHAIR</b>. A chair is an <span class="tag obj">OBJECT</span>. We sit on it! 🪑</p>`; complete('p1-see'); }});
+ },
+ teach:{ask:'What can you see? What do we use it for?', expect:'A chair. We sit on it.', struggle:'Point to a real chair in the room. Sit on it together and say "This is a chair."', demo:'Have a real wooden chair or stool nearby.'}},
+
+{id:'p1-made', ch:1, gate:true, title:'What is it made from?',
+ say:"Let's look closely with our magnifying glass! Tap the button.",
+ render(b){
+  b.innerHTML = `<div class="split"><div class="hero-pic mag-wrap">${ico('chair')}<div class="mag hidden"><div class="mag-lens sw-wood"></div><span>WOOD</span></div></div>
+    <div class="center"><button class="btn orange big look">🔍 Look closely!</button><p class="big-say after hidden">This chair is made from <b>WOOD</b>.<br>Wood is a <span class="tag mat">MATERIAL</span>.</p></div></div>
+    <div class="defs hidden">
+      <div class="def obj"><h3>OBJECT</h3><p>Something we can see, touch and use.</p><div class="row">${icoS('chair')}${icoS('spoon')}${icoS('ball')}</div></div>
+      <div class="def mat"><h3>MATERIAL</h3><p>What an object is made from.</p><div class="row">${matChar('wood')}${matChar('metal')}${matChar('plastic')}</div></div>
+    </div>
+    <div class="eq hidden">${icoS('chair')} <span>Chair (object)</span> <span>➜ is made from ➜</span> ${matChar('wood')} <span>Wood (material)</span></div>`;
+  $('.look',b).onclick = e => { e.currentTarget.classList.add('hidden'); ['.mag','.after','.defs','.eq'].forEach(s=>$(s,b).classList.remove('hidden')); sfx.good(); complete('p1-made');
+    if(S.voice) speak('This chair is made from wood. Wood is a material. An object is something we can see, touch and use. A material is what an object is made from.'); };
+ },
+ teach:{ask:'What is the difference between an object and a material?', expect:'An object is something we use. A material is what it is made from.', struggle:'Show a chair and ask: "What is this?" (a chair). "What is it made from?" (wood).', demo:'Use a wooden pencil, plastic bottle, metal spoon and fabric cloth. For each one ask: "What is it?" and "What is it made from?"'}},
+
+{id:'p1-cards', ch:1, gate:true, title:'Objects and their materials',
+ say:"Tap each object card to find out what it is made from!",
+ render(b){
+  const pairs = [['chair','Chair','wood','Wood'],['bottle','Water bottle','plastic','Plastic'],['spoon','Spoon','metal','Metal'],['window','Window','glass','Glass'],['tshirt','T-shirt','fabric','Fabric'],['wall','Garden wall','rock','Stone']];
+  const seen = new Set();
+  b.innerHTML = `<div class="grid" style="--min:140px">${pairs.map((p,i)=>`<button class="flip" data-i="${i}" aria-label="${p[1]}"><span class="in"><span class="sa"><span class="ic-w">${ico(p[0])}</span><b>${p[1]}</b><small>OBJECT · tap me!</small></span><span class="sb">${matChar(p[2],'lg')}<small>made from</small><b>${p[3]}</b></span></span></button>`).join('')}</div>
+    <p class="counter">Flipped: <b class="n">0</b> / 6</p><p class="big-say said"></p>`;
+  $$('.flip',b).forEach(f => f.onclick = () => {
+    const p = pairs[+f.dataset.i]; f.classList.toggle('on'); sfx.pop();
+    if(f.classList.contains('on')){ $('.said',b).innerHTML = `A <b>${p[1].toLowerCase()}</b> is made from <b>${p[3].toUpperCase()}</b>.`; if(S.voice) speak(`A ${p[1]} is made from ${p[3]}.`); }
+    if(!seen.has(p[0])){ seen.add(p[0]); $('.n',b).textContent = seen.size; if(seen.size===6){ addStars(1, f); complete('p1-cards'); } }
+  });
+ },
+ teach:{ask:'What is the window made from? What is the T-shirt made from?', expect:'Glass. Fabric.', struggle:'Before flipping, let the child guess. Then flip to check – guessing then checking is real science!', demo:'Find each of these objects at home and touch the material.'}},
+
+{id:'p1-mixed', ch:1, gate:true, title:'More than one material!',
+ say:"Some objects are made from MORE than one material! Tap the glowing parts of this chair.",
+ render(b){
+  const parts = {wood:['Wooden legs and back','wood','WOOD'], plastic:['A plastic seat','plastic','PLASTIC'], metal:['Metal screws','metal','METAL']};
+  b.innerHTML = `<div class="split"><div>${CHAIR_BIG}</div><div><p class="counter">Found: <b class="n">0</b> / 3 materials</p><ul class="found-list"></ul><div class="extra"></div></div></div>`;
+  const found = new Set();
+  $$('.hot',b).forEach(g => onActivate(g, () => {
+    const k = g.dataset.part; if(found.has(k)) return;
+    found.add(k); g.classList.add('found'); sfx.good();
+    $('.found-list',b).insertAdjacentHTML('beforeend', `<li>${matChar(parts[k][1],'sm')} ${parts[k][0]} – <b>${parts[k][2]}</b></li>`);
+    $('.n',b).textContent = found.size;
+    if(S.voice) speak(parts[k][0]+'. '+parts[k][2]);
+    if(found.size===3){
+      addStars(1, g);
+      $('.extra',b).innerHTML = `<div class="note pop-in"><b>One chair – three materials!</b> 🎉<br>An <b>umbrella</b> can be made from more than one material too: a waterproof <b>fabric</b> or <b>plastic</b> cover, a <b>metal</b> tube and a <b>wooden</b> handle!<div class="row-btns" style="margin:8px 0 0"><span style="width:70px;height:70px">${ico('umbrella')}</span></div></div>`;
+      complete('p1-mixed');
+    }
+  }));
+ },
+ teach:{ask:'Can you find something in this room made from more than one material?', expect:'A pencil (wood and paint), a door (wood and a metal handle), a window (glass and a plastic or wooden frame).', struggle:'Look at a pencil together: the wooden part, the painted part, the metal end and the rubber.', demo:'Booklet challenge: hunt for things made from more than one material and list the materials.'}},
+
+{id:'p1-check', ch:1, gate:true, badge:'object', title:'Quick check: object or material?',
+ say:"Time for a quick check! Is it an OBJECT or a MATERIAL?",
+ render(b){
+  const Q = [
+    {pic:'mat:wood', q:'Is <b>WOOD</b> an object or a material?', ans:'mat', exp:'Wood is a <b>MATERIAL</b>. Chairs and tables are made <i>from</i> wood.'},
+    {pic:'table', q:'Is a <b>TABLE</b> an object or a material?', ans:'obj', exp:'A table is an <b>OBJECT</b> – a thing we use. It can be made from wood, metal or plastic.'},
+    {pic:'mat:plastic', q:'Is <b>PLASTIC</b> an object or a material?', ans:'mat', exp:'Plastic is a <b>MATERIAL</b>. Bottles and toys are made from plastic.'}
+  ];
+  let i = 0;
+  const show = () => {
+    const c = Q[i];
+    b.innerHTML = `<div class="check-q"><p class="qnum">Question ${i+1} of ${Q.length}</p><div class="hero-pic sm" style="display:grid;place-items:center">${c.pic.indexOf('mat:')===0?matChar(c.pic.slice(4),'lg'):ico(c.pic)}</div><div class="qb"></div><div class="row-btns nx"></div></div>`;
+    mcq($('.qb',b), {q:c.q, keepOrder:true, hint:'Think: is it a <b>thing we use</b>, or what things are <b>made from</b>?',
+      opts:[{t:'📦 OBJECT', ok:c.ans==='obj'},{t:'🧱 MATERIAL', ok:c.ans==='mat'}], explain:c.exp,
+      onCorrect(){ const nx=$('.nx',b);
+        if(i<Q.length-1) nx.innerHTML = `<button class="btn primary">Next question ▶</button>`, nx.firstChild.onclick = () => { i++; show(); };
+        else { nx.innerHTML = `<p class="big-say pop-in">You finished Part 1! 🎉</p>`; complete('p1-check'); } }});
+  };
+  show();
+ },
+ teach:{ask:'Is a spoon an object or a material? Is metal an object or a material?', expect:'A spoon is an object. Metal is a material.', struggle:'Use the sentence: "A ___ is made from ___." The first gap is the object, the second gap is the material.', demo:'Booklet "In the Toy Box": draw five toys, label what each one is (object) and what it is made from (material).'}},
+
+/* ---------------- PART 2: MATERIAL EXPLORER ---------------- */
+{id:'p2-intro', ch:2, title:'Meet the materials!',
+ say:"We use six main materials to make most everyday things: wood, plastic, metal, glass, fabric and rock!",
+ render(b){
+  b.innerHTML = `<div class="lab-shelf">${MAT_ORDER.map(m=>`<span style="display:flex;flex-direction:column;align-items:center;gap:4px">${matChar(m,'lg')}<b>${MATS[m].name}</b></span>`).join('')}</div>
+   <p class="center" style="font-size:22px">Different materials are good at different jobs. 🛠️</p>
+   <div class="nat">
+     <div class="soft-card"><h3>🌳 From nature</h3><div class="row">${[['tree','Wood'],['rock','Rock'],['sheep','Wool'],['cotton','Cotton']].map(x=>`<span class="lab"><span style="width:60px;height:60px">${ico(x[0])}</span>${x[1]}</span>`).join('')}</div></div>
+     <div class="soft-card"><h3>🏭 Made by people in factories</h3><div class="row">${[['mat:plastic','Plastic'],['mat:glass','Glass'],['mat:metal','Metal']].map(x=>`<span class="lab">${pic(x[0])}${x[1]}</span>`).join('')}</div><small style="color:var(--muted)">…from things found in nature, like oil, sand and rocks!</small></div>
+   </div>`;
+ },
+ teach:{ask:'Which materials come from nature? Which are made by people?', expect:'Wood, rock, cotton and wool come from nature. Plastic, glass and metal are made in factories.', struggle:'Keep it simple: "Did it grow, or was it made in a factory?"', demo:'Show a leaf or twig (natural) next to a plastic toy (made by people).'}},
+
+{id:'p2-explore', ch:2, gate:true, title:'Material Explorer',
+ say:"Tap each material to explore it. Can you explore all six?",
+ render(b){
+  const draw = () => {
+    b.innerHTML = `<div class="flasks">${MAT_ORDER.map(m=>`<span class="${S.explored.includes(m)?'on':''}">🧪</span>`).join('')}</div>
+     <p class="counter">Explored: <b>${S.explored.length}</b> / 6</p>
+     <div class="mat-dash">${MAT_ORDER.map(m=>`<button class="mat-btn ${S.explored.includes(m)?'seen':''}" data-m="${m}">${S.explored.includes(m)?'<span class="tick">✓</span>':''}${matChar(m,'lg')}${MATS[m].name}</button>`).join('')}</div>`;
+    $$('.mat-btn',b).forEach(x => x.onclick = () => openMat(x.dataset.m, draw));
+    if(MAT_ORDER.every(m=>S.explored.includes(m))){
+      if(!S.done['p2-explore']) $('.counter',b).insertAdjacentHTML('afterend','<p class="big-say pop-in">🎉 You explored all six materials!</p>');
+      complete('p2-explore');
+    }
+  };
+  draw();
+ },
+ teach:{ask:'Which material would you use to make a window? Why?', expect:'Glass, because we can see through it.', struggle:'Open one material at a time and touch a real example while reading it.', demo:'Booklet "Materials Hunt" table: glass, plastic, metal, wood, fabric, stone or rock.'}},
+
+{id:'p2-source', ch:2, gate:true, badge:'material', title:'Where do materials come from?',
+ say:"Match each material to where it comes from. Tap a material, then tap where it comes from. You can drag them too!",
+ render(b){
+  const L = [['wood','tree','Trees'],['plastic','oil','Oil'],['glass','sand','Sand'],['metal','ore','Rocks dug from the ground'],['fabric','sheep','Sheep & cotton plants']];
+  const R = shuffle(L);
+  let sel = null, done = 0;
+  b.innerHTML = `<div class="match"><div class="col">${L.map(x=>`<button class="mitem mt" data-k="${x[0]}">${matChar(x[0],'sm')}${MATS[x[0]].name}</button>`).join('')}</div>
+    <div class="col">${R.map(x=>`<button class="mitem src" data-k="${x[0]}">${icoS(x[1])}${x[2]}</button>`).join('')}</div></div><div class="fb"></div>`;
+  const fb=$('.fb',b);
+  const tryMatch = (m, s) => {
+    if(m.classList.contains('done')||s.classList.contains('done')) return;
+    if(m.dataset.k===s.dataset.k){
+      m.classList.add('done'); s.classList.add('done'); m.classList.remove('sel'); sel=null; done++; sfx.good(); addStars(1,s);
+      const info = L.find(x=>x[0]===m.dataset.k);
+      fb.className='fb good'; fb.innerHTML=`<b>${praise()}</b>${MATS[info[0]].from}`;
+      if(done===L.length){ fb.innerHTML += '<br>🎉 All matched!'; complete('p2-source'); }
+    } else { sfx.bad(); s.classList.add('shake'); setTimeout(()=>s.classList.remove('shake'),500); fb.className='fb try'; fb.innerHTML='<b>Hmm, not quite!</b>Think about where it comes from. Try again!'; }
+  };
+  $$('.mt',b).forEach(m => makeDraggable(m, {dropSel:'.src', onDrop:z=>tryMatch(m,z), onTap:()=>{ if(m.classList.contains('done')) return; $$('.mt',b).forEach(x=>x.classList.remove('sel')); m.classList.add('sel'); sel=m; sfx.pop(); }}));
+  $$('.src',b).forEach(s => s.addEventListener('click', () => { if(sel) tryMatch(sel, s); else toast('First tap a material on the left! 👈'); }));
+ },
+ teach:{ask:'Where does wood come from? What is glass made from?', expect:'Trees. Sand.', struggle:'Go back to the Material Explorer and look at "Where does it come from?" for each one.', demo:'Booklet challenge: find out how we make paper (from wood) and plates (from clay).'}},
+
+/* ---------------- PART 3: PROPERTIES ---------------- */
+{id:'p3-intro', ch:3, title:'What is a property?',
+ say:"A PROPERTY tells us what a material is like! We find out by touching, looking and testing.",
+ render(b){
+  b.innerHTML = `<div class="big-say">A <b style="color:var(--blue)">PROPERTY</b> tells us what a material is like! 🕵️</div>
+   <div class="grid" style="--min:220px">
+    <div class="soft-card center"><div style="font-size:54px">👋</div><h3>How does it feel?</h3><p>hard · soft · bendy · stretchy</p></div>
+    <div class="soft-card center"><div style="font-size:54px">👀</div><h3>What does it look like?</h3><p>see-through · shiny · rough · smooth</p></div>
+    <div class="soft-card center"><div style="font-size:54px">💧</div><h3>What does water do?</h3><p>waterproof · absorbent</p></div>
+   </div>
+   <p class="note">We will learn <b>one property at a time</b>. Each one has an experiment to try! 🧪</p>`;
+ },
+ teach:{ask:'How would you describe this spoon? How about this jumper?', expect:'Hard, shiny, smooth… Soft, warm, stretchy…', struggle:'Give two choices: "Is it hard or soft? Is it shiny or dull?"', demo:'Booklet "Jamie\'s Feely Bag": put an object in a bag and describe it using four words.'}},
+
+...PROPS.map(P => ({
+  id:'p3-'+P.id, ch:3, gate:true, title:P.word.charAt(0)+P.word.slice(1).toLowerCase(), tag:'Property', teach:P.teach,
+  say:P.def,
+  render(b){
+    b.innerHTML = `<div class="prop-hero" style="--c:${P.color}"><span class="pe">${P.emoji}</span><h2>${P.word}</h2><p class="def">${P.def}</p></div>
+      <div class="ex-row">${P.ex.map(e=>`<div class="ex">${icoS(e[0])}${e[1]}</div>`).join('')}</div>
+      <div class="demo-box"><p class="predict">${P.predict}</p><div class="demo"></div></div>
+      ${P.note?`<div class="note">${P.note}</div>`:''}
+      <div class="qb"><p class="inst">🔒 Try the experiment first, then answer the question!</p></div>`;
+    let shown = false;
+    DEMOS[P.demo.type]($('.demo',b), P.demo, () => {
+      if(shown) return; shown = true;
+      mcq($('.qb',b), {q:P.q.q, opts:P.q.opts, keepOrder:P.q.keepOrder, explain:P.q.explain, onCorrect(){ complete('p3-'+P.id); }});
+    });
+  }
+})),
+
+{id:'p3-more', ch:3, gate:true, title:'Opposites!',
+ say:"Lots of property words have an opposite! Look at the pairs, then answer the questions.",
+ render(b){
+  const OPP = [['hard','rock','soft','pillow'],['waterproof','raincoat','absorbent','sponge'],['transparent','window','opaque','door'],['flexible','rubberband','rigid','woodruler'],['shiny','spoon','dull','brick'],['smooth','pebbles','rough','rock']];
+  const Q = [
+    {q:'The opposite of <b>dull</b> is…', opts:[{t:'Shiny ✨',ok:true},{t:'Smooth 🥚'},{t:'Absorbent 💧'}], exp:'Shiny! A metal spoon is shiny. A brick is dull.'},
+    {q:'The opposite of <b>lumpy and bumpy</b> is…', opts:[{t:'Shiny ✨'},{t:'Smooth 🥚',ok:true},{t:'Absorbent 💧'}], exp:'Smooth! A pebble feels smooth. A rock can feel rough and bumpy.'},
+    {q:'The opposite of <b>waterproof</b> is…', opts:[{t:'Shiny ✨'},{t:'Smooth 🥚'},{t:'Absorbent 💧',ok:true}], exp:'Absorbent! Waterproof keeps water out. Absorbent soaks it up.'}
+  ];
+  b.innerHTML = `<div class="opp-grid">${OPP.map(o=>`<div class="opp"><div>${icoS(o[1])}${o[0].toUpperCase()}</div><span class="vs">⇄</span><div>${icoS(o[3])}${o[2].toUpperCase()}</div></div>`).join('')}</div>
+   <p class="note">✨ <b>Shiny</b> things sparkle in the light. 🥚 <b>Smooth</b> things have no bumps. 🧱 <b>Rough</b> things feel bumpy. 📏 <b>Rigid</b> things do not bend.</p>
+   <h3 class="center" style="margin-top:14px">Fill in the blanks <small style="color:var(--muted)">(keywords: absorbent, smooth, shiny)</small></h3><div class="oq"></div>`;
+  let i=0; const box=$('.oq',b);
+  const show = () => {
+    box.innerHTML = `<p class="qnum">Question ${i+1} of ${Q.length}</p><div class="qb"></div><div class="row-btns nx"></div>`;
+    mcq($('.qb',box), {q:Q[i].q, opts:Q[i].opts, explain:Q[i].exp, onCorrect(){ const nx=$('.nx',box);
+      if(i<Q.length-1){ nx.innerHTML='<button class="btn primary">Next ▶</button>'; nx.firstChild.onclick=()=>{i++;show();}; }
+      else { nx.innerHTML='<p class="big-say pop-in">Opposites expert! 🎉</p>'; complete('p3-more'); } }});
+  };
+  show();
+ },
+ teach:{ask:'What is the opposite of hard? Of transparent?', expect:'Soft. Opaque.', struggle:'Act it out: stand stiff like a ruler (rigid), then wiggle like a rubber band (flexible).', demo:'Booklet: rub a pebble (smooth) and a brick or tree bark (rough). Compare a spoon (shiny) with a wooden block (dull).'}},
+
+{id:'p3-compare', ch:3, gate:true, badge:'property', title:'Property comparison board',
+ say:"Let's compare two materials side by side! Tap a pair to compare. Try at least two pairs.",
+ render(b){
+  b.innerHTML = `<div class="pairs">${PAIRS.map((p,i)=>`<button class="btn ghost pr" data-i="${i}">${CMP[p[0]].name} vs ${CMP[p[1]].name}</button>`).join('')}</div>
+    <div class="board-wrap"><p class="inst">👆 Choose a pair above</p></div>
+    <div class="note">💡 <b>A material can have more than one property!</b> Metal can be hard <i>and</i> shiny. Glass can be hard <i>and</i> transparent. Fabric can be soft <i>and</i> absorbent. Plastic can be hard <i>or</i> flexible – it depends on the type of plastic!</div>`;
+  const seen = new Set(S.compared||[]);
+  $$('.pr',b).forEach(btn => btn.onclick = () => {
+    $$('.pr',b).forEach(x=>x.classList.remove('on')); btn.classList.add('on'); sfx.pop();
+    const [a,c] = PAIRS[+btn.dataset.i].map(k=>CMP[k]);
+    const both = a.p.filter(x=>c.p.includes(x));
+    const col = m => `<div class="bcol"><div class="top">${matChar(m.m)}<span class="ico-s">${ico(m.pic)}</span></div><h3>${m.name}</h3>${m.p.map(x=>`<div class="pchip ${both.includes(x)?'both':''}"><span>${PROP_EMOJI[x]||'•'}</span>${x}</div>`).join('')}</div>`;
+    const diff = a.p.filter(x=>!both.includes(x))[0], diff2 = c.p.filter(x=>!both.includes(x))[0];
+    $('.board-wrap',b).innerHTML = `<div class="board pop-in">${col(a)}${col(c)}</div><p class="board-say">${both.length?`Both are <b>${both.join(' and ')}</b>! `:''}${a.name} is <b>${diff}</b>, but ${c.name.toLowerCase()} is <b>${diff2}</b>.</p>`;
+    seen.add(btn.dataset.i); S.compared=[...seen]; save();
+    if(S.voice) speak($('.board-say',b).innerHTML);
+    if(seen.size>=2) complete('p3-compare');
+  });
+ },
+ teach:{ask:'How are glass and wood the same? How are they different?', expect:'Both are hard. Glass is transparent, wood is opaque.', struggle:'Compare just one property at a time: "Can you see through it?"', demo:'Booklet "All Sorted!": sort a scarf, spoon, brick, yoghurt pot, table, cushion, water bottle, window, jam jar and umbrella into flexible / waterproof and hard / opaque groups.'}},
+
+/* ---------------- PART 4: GAMES ---------------- */
+{id:'p4-sort', ch:4, gate:true, tag:'Activity A', title:'Object or Material? Sorting game',
+ say:"Sort the cards! Drag each card into OBJECTS or MATERIALS. Or tap a card, then tap a box.",
+ render(b){
+  const items = shuffle(SORT_ITEMS).map(x=>Object.assign({missed:false},x));
+  let sel=null, placed=0, score=0;
+  b.innerHTML = `<div class="tray">${items.map((x,i)=>`<button class="scard" data-i="${i}"><span class="ico-s">${pic(x.p)}</span>${x.t}</button>`).join('')}</div>
+    <div class="zones"><div class="zone z-obj" data-z="obj" role="button" tabindex="0"><h3>📦 OBJECTS</h3><small>Things we use</small><div class="zl"></div></div>
+    <div class="zone z-mat" data-z="mat" role="button" tabindex="0"><h3>🧱 MATERIALS</h3><small>What things are made from</small><div class="zl"></div></div></div>
+    <div class="fb"></div><p class="score">Score: <b class="sc">0</b> / ${items.length} ⭐</p>`;
+  const fb=$('.fb',b);
+  const armZones = on => $$('.zone',b).forEach(z=>z.classList.toggle('armed', on));
+  const place = (card, zone) => {
+    const it = items[+card.dataset.i];
+    if(zone.dataset.z===it.z){
+      card.classList.remove('sel'); card.classList.add('placed'); card.disabled=true; $('.zl',zone).appendChild(card); sel=null; armZones(false); placed++;
+      if(!it.missed){ score++; addStars(1, card); } sfx.good(); $('.sc',b).textContent=score;
+      fb.className='fb good'; fb.innerHTML = `<b>${praise()}</b>${it.z==='obj'?`A ${it.t.toLowerCase()} is an <b>OBJECT</b> – a thing we use.`:`${it.t} is a <b>MATERIAL</b> – things are made from it.`}`;
+      if(placed===items.length){ fb.innerHTML += `<br>🎉 All sorted! You scored ${score} out of ${items.length}.`; confetti(40); complete('p4-sort'); }
+    } else {
+      it.missed=true; sfx.bad(); card.classList.add('shake'); zone.classList.add('flash'); setTimeout(()=>{card.classList.remove('shake'); zone.classList.remove('flash');},500);
+      fb.className='fb try'; fb.innerHTML = `<b>Not quite – try again! 🤔</b>Ask yourself: <i>Is it a thing I can use?</i> Or <i>is it what things are made from?</i>`;
+    }
+  };
+  $$('.scard',b).forEach(c => makeDraggable(c, {dropSel:'.zone', onDrop:z=>place(c,z),
+    onTap:()=>{ if(c.classList.contains('placed')) return; const was=c.classList.contains('sel'); $$('.scard',b).forEach(x=>x.classList.remove('sel')); if(!was){ c.classList.add('sel'); sel=c; armZones(true); sfx.pop(); } else { sel=null; armZones(false); } }}));
+  $$('.zone',b).forEach(z => onActivate(z, e => { if(e.target.closest('.scard')) return; if(sel) place(sel, z); else toast('Tap a card first, then tap a box! 👆'); }));
+ },
+ teach:{ask:'Why is "spoon" an object but "metal" a material?', expect:'We use a spoon. Metal is what the spoon is made from.', struggle:'Use the sentence test: "A ___ is made from ___." If the word fits the first gap, it is an object.', demo:'Write the words on sticky notes and sort them on two pieces of paper.'}},
+
+{id:'p4-mystery', ch:4, gate:true, badge:'mystery', tag:'Activity B', title:'The Mystery Feely Bag',
+ say:"Oh no! Something is hiding inside my mystery bag. Listen to the clues. Can you guess what it is made from?",
+ render(b){
+  let qi=0, solved=0, stars=0;
+  const show = () => {
+    const M = MYSTERY[qi]; let shown=1, done=false; const opts = shuffle(M.opts);
+    b.innerHTML = `<div class="mq-head"><span>Mystery ${qi+1} of ${MYSTERY.length}</span><span>Solved: ${solved} 🎒</span></div>
+      <div class="mystery"><div class="bag-wrap"><div class="bag jiggle">${BAG}</div></div>
+      <div><ul class="clues"></ul><div class="row-btns" style="justify-content:flex-start"><button class="btn ghost more">🔍 Another clue</button></div>
+      <p class="q" style="text-align:left">What is it made from?</p>
+      <div class="opts">${opts.map((o,i)=>`<button class="opt" data-i="${i}"><span class="opt-pic">${pic(o[1])}</span>${o[0]}</button>`).join('')}</div>
+      <div class="fb"></div><div class="row-btns nx"></div></div></div>`;
+    const clues=$('.clues',b), more=$('.more',b), fb=$('.fb',b);
+    const drawClues = () => { clues.innerHTML = M.clues.slice(0,shown).map(c=>`<li>${c}</li>`).join(''); more.disabled = shown>=M.clues.length; if(S.voice) speak(M.clues[shown-1]); };
+    drawClues();
+    more.onclick = () => { if(shown<M.clues.length){ shown++; drawClues(); sfx.pop(); } };
+    $$('.opt',b).forEach(btn => btn.onclick = () => {
+      if(done) return; const o=opts[+btn.dataset.i];
+      const right = o[0].toLowerCase().indexOf(M.ans.toLowerCase())===0;
+      if(right){
+        done=true; solved++; btn.classList.add('right'); $$('.opt',b).forEach(x=>x.disabled=true); sfx.win();
+        const firstTry = !$('.opt.wrong',b); if(firstTry){ stars++; addStars(1,btn); }
+        shown=M.clues.length; drawClues(); more.disabled=true;
+        $('.bag-wrap',b).insertAdjacentHTML('beforeend', `<div class="reveal-obj">${ico(M.reveal)}</div>`);
+        fb.className='fb good'; fb.innerHTML=`<b>${praise()} 🎉</b>${M.say}`;
+        if(S.voice) speak(M.say);
+        const nx=$('.nx',b);
+        if(qi<MYSTERY.length-1){ nx.innerHTML='<button class="btn primary">Next mystery ▶</button>'; nx.firstChild.onclick=()=>{qi++; show();}; }
+        else { nx.innerHTML=`<p class="big-say pop-in">You solved all ${MYSTERY.length} mysteries! 🕵️</p>`; confetti(50); complete('p4-mystery'); }
+      } else {
+        btn.classList.add('wrong'); btn.disabled=true; sfx.bad();
+        fb.className='fb try';
+        if(shown<M.clues.length){ shown++; drawClues(); fb.innerHTML='<b>Not quite! 🤔</b>Here is another clue to help you…'; }
+        else fb.innerHTML='<b>Not quite! 🤔</b>Read all the clues again carefully.';
+      }
+    });
+  };
+  show();
+ },
+ teach:{ask:'Which clue helped you the most?', expect:'e.g. "You can see through me" told me it was glass.', struggle:'Read each clue aloud slowly and ask "Which material does THAT?"', demo:'Make a real feely bag: put a spoon, a sock, a pebble and a sponge in a pillowcase. The child feels one and describes it with four words (booklet: Jamie\'s Feely Bag). Do NOT put glass or sharp things in the bag.'}},
+
+{id:'p4-hunt', ch:4, gate:true, tag:'Activity C', title:'Real-World House Hunt',
+ say:"Little Scientist! It's time to explore your home! Can you find something made from each material?",
+ render(b){
+  const draw = () => {
+    const n = HUNT.filter(h=>S.hunt[h.m] && S.hunt[h.m].found).length;
+    b.innerHTML = `<div class="safety">⚠️ <b>Safety first!</b> Look and point – don't pick things up. Never touch electrical things, hot things, sharp tools, broken glass or heavy objects. Ask a grown-up to help.</div>
+      <p class="counter">Missions complete: <b>${n}</b> / 6 🏠</p>
+      <div class="missions">${HUNT.map((h,i)=>{ const st=S.hunt[h.m]||{}; const M=MATS[h.m]; return `<div class="mission ${st.found?'done':''}" data-m="${h.m}">
+        ${st.found?'<span class="stamp">⭐</span>':''}
+        <div class="mh">${matChar(h.m)}<div><h3>Mission ${i+1}: Find something made from ${M.name.toUpperCase()}!</h3><small>Like this:</small></div><span class="ex-pic">${ico(h.ex)}</span></div>
+        ${st.found?`<p class="found-txt">✅ I found: ${esc(st.what||'something!')}</p>`:`
+          <select aria-label="What did you find?"><option value="">Choose what you found…</option>${h.s.map(s=>`<option>${s}</option>`).join('')}</select>
+          <input type="text" maxlength="30" placeholder="…or type it here" aria-label="Type what you found">
+          <div class="row-btns" style="margin:10px 0 0"><button class="btn green fd">✅ I found it!</button></div>`}
+        <label class="check"><input type="checkbox" class="ck" ${st.checked?'checked':''}> 👩 Grown-up checked</label></div>`; }).join('')}</div>
+      <div class="lab-sec"><h3>⭐ Challenge: Can you find something made from MORE THAN ONE material?</h3><textarea class="ex2" placeholder="e.g. A door – wood and metal">${esc(S.huntExtra)}</textarea></div>
+      <div class="row-btns">${n===0?'<button class="btn ghost later">We will explore later ▶</button>':''}</div>`;
+    $$('.mission',b).forEach(card => {
+      const m=card.dataset.m; const fd=$('.fd',card);
+      if(fd) fd.onclick = () => {
+        const what = ($('input[type=text]',card).value.trim() || $('select',card).value).slice(0,30);
+        if(!what){ toast('Choose or type what you found first! 🔍'); return; }
+        S.hunt[m] = Object.assign(S.hunt[m]||{}, {found:true, what}); save(); sfx.win(); confetti(30); addStars(1, fd);
+        if(S.voice) speak(`Mission complete! You found ${what}, made from ${MATS[m].name}.`);
+        draw(); complete('p4-hunt'); if(!S.badges.includes('home')) setTimeout(()=>giveBadge('home'), 700);
+      };
+      $('.ck',card).onchange = e => { S.hunt[m] = Object.assign(S.hunt[m]||{}, {checked:e.target.checked}); save(); };
+    });
+    $('.ex2',b).oninput = e => { S.huntExtra = e.target.value.slice(0,300); save(); };
+    const later=$('.later',b); if(later) later.onclick = () => { complete('p4-hunt'); toast('No problem! You can come back to the hunt any time. 🏠'); };
+  };
+  draw();
+ },
+ teach:{ask:'What did you find made from metal? How did you know it was metal?', expect:'A spoon – it is hard, shiny and cold.', struggle:'Give a clue: "Look in the kitchen drawer…"', demo:'Booklet "Materials Hunt": write or draw the things you find in a table with six columns. Tick "Grown-up checked" when you have seen the object together.'}},
+
+{id:'p4-match', ch:4, gate:true, tag:'Activity D', title:'Property Detective: match the clues',
+ say:"Match each object with a property! Tap an object, then tap a property card. Some objects have more than one property!",
+ render(b){
+  let selObj=null, selProp=null, doneN=0; const got = PMATCH.map(()=>new Set());
+  b.innerHTML = `<div class="pcards">${PCARDS.map(p=>`<button class="pcard" data-p="${p[0]}">${p[2]} ${p[1]}</button>`).join('')}</div>
+    <div class="pmatch">${PMATCH.map((o,i)=>`<button class="pobj" data-i="${i}"><span class="ico-s">${ico(o.p)}</span>${o.t}<span class="got"></span></button>`).join('')}</div>
+    <div class="fb"></div><p class="counter">Matched: <b class="n">0</b> / ${PMATCH.length}</p>`;
+  const fb=$('.fb',b);
+  const tryMatch = (objEl, prop) => {
+    const i=+objEl.dataset.i, o=PMATCH[i], label=PCARDS.find(p=>p[0]===prop)[1];
+    $$('.pcard',b).forEach(x=>x.classList.remove('sel')); $$('.pobj',b).forEach(x=>x.classList.remove('sel')); selObj=null; selProp=null;
+    if(got[i].has(prop)){ toast(`You already matched ${label}! Try another property.`); return; }
+    if(o.ok.includes(prop)){
+      const first = got[i].size===0; got[i].add(prop);
+      $('.got',objEl).insertAdjacentHTML('beforeend', `<span>${label}</span>`); objEl.classList.add('done'); sfx.good();
+      if(first){ doneN++; addStars(1,objEl); $('.n',b).textContent=doneN; }
+      fb.className='fb good'; fb.innerHTML=`<b>${praise()}</b>A ${o.t.toLowerCase()} is <b>${label.toLowerCase()}</b>.${first&&o.ok.length>1?' Can you find another property for it too?':''}`;
+      if(doneN===PMATCH.length && first){ fb.innerHTML+='<br>🎉 Every object matched!'; complete('p4-match'); }
+    } else {
+      sfx.bad(); objEl.classList.add('shake'); setTimeout(()=>objEl.classList.remove('shake'),500);
+      fb.className='fb try'; fb.innerHTML=`<b>Hmm, not that one! 🤔</b>${o.hint}`;
+    }
+  };
+  $$('.pcard',b).forEach(c => makeDraggable(c, {dropSel:'.pobj', onDrop:z=>tryMatch(z, c.dataset.p),
+    onTap:()=>{ if(selObj){ tryMatch(selObj, c.dataset.p); return; } $$('.pcard',b).forEach(x=>x.classList.remove('sel')); c.classList.add('sel'); selProp=c.dataset.p; sfx.pop(); }}));
+  $$('.pobj',b).forEach(o => o.addEventListener('click', () => { if(selProp){ tryMatch(o, selProp); return; } $$('.pobj',b).forEach(x=>x.classList.remove('sel')); o.classList.add('sel'); selObj=o; sfx.pop(); }));
+ },
+ teach:{ask:'Why is a sponge good for washing up?', expect:'It is absorbent – it soaks up water.', struggle:'Go back to the property pages and replay the experiments.', demo:'Booklet "Describing Materials": match gloves → stretchy, wellies → waterproof, rubber band → stretchy, drinking glass → see-through, wooden door → hard.'}},
+
+{id:'p4-tick', ch:4, gate:true, tag:'Activity D – part 2', title:'Tick the properties',
+ say:"Tick the correct properties for each object. You can tick more than one box for each object!",
+ render(b){
+  const sel = TICK_ROWS.map(()=>new Set());
+  b.innerHTML = `<div class="tick-rows">${TICK_ROWS.map((r,i)=>`<div class="trow" data-i="${i}"><div class="tl">${icoS(r.p)}${r.t} is…</div><div class="tbtns">${TICK_COLS.map(c=>`<button class="tbtn" data-c="${c[0]}" aria-pressed="false">${c[1]}</button>`).join('')}</div></div>`).join('')}</div>
+    <div class="row-btns"><button class="btn primary big chk">✔ Check my answers</button></div><div class="fb"></div>`;
+  const opp = {bendy:'notbendy', notbendy:'bendy', transparent:'opaque', opaque:'transparent'};
+  $$('.trow',b).forEach(row => { const i=+row.dataset.i; $$('.tbtn',row).forEach(t => t.onclick = () => {
+    if(row.classList.contains('ok')) return; const c=t.dataset.c;
+    if(sel[i].has(c)) sel[i].delete(c); else { sel[i].add(c); sel[i].delete(opp[c]); }
+    $$('.tbtn',row).forEach(x=>{ const on=sel[i].has(x.dataset.c); x.classList.toggle('on',on); x.setAttribute('aria-pressed',on); });
+    row.classList.remove('bad'); sfx.pop();
+  }); });
+  $('.chk',b).onclick = () => {
+    let allOk=true;
+    TICK_ROWS.forEach((r,i) => { const row=$$('.trow',b)[i]; const ok = r.ans.length===sel[i].size && r.ans.every(a=>sel[i].has(a));
+      if(ok){ if(!row.classList.contains('ok')) addStars(1,row); row.classList.add('ok'); row.classList.remove('bad'); } else { allOk=false; row.classList.add('bad'); } });
+    const fb=$('.fb',b);
+    if(allOk){ sfx.win(); fb.className='fb good'; fb.innerHTML='<b>Perfect! 🎉</b>Only the paper straw is bendy, and only the glass window is transparent!'; complete('p4-tick'); }
+    else { sfx.bad(); fb.className='fb try'; fb.innerHTML='<b>Nearly there! 🤔</b>Look at the orange rows again. For each object ask: <i>Can it bend?</i> and <i>Can I see through it?</i>'; }
+  };
+ },
+ teach:{ask:'Why is a window not bendy?', expect:'Because glass is hard and rigid.', struggle:'Each object needs two ticks: one for bendy / not bendy and one for transparent / opaque.', demo:'Gently bend a paper straw. Hold a stick of chalk up to the light – can you see through it?'}},
+
+{id:'p4-lab', ch:4, gate:true, tag:'Bonus experiment', title:'The Umbrella Test',
+ say:"Real scientists do experiments! Teddy needs an umbrella. Which material will keep Teddy dry?",
+ render(b){
+  let pred=null; const tested={};
+  b.innerHTML = `<div class="enq"><span class="on">❓ Ask</span><span class="e2">💭 Predict</span><span class="e3">🧪 Test</span><span class="e4">🔍 Observe</span><span class="e5">📝 Record</span><span class="e6">📣 Conclude</span></div>
+   <div class="lab-sec"><h3>❓ Our question</h3><p>Which material would make the best umbrella for Teddy?</p></div>
+   <div class="lab-sec"><h3>💭 Predict – what do you think?</h3><div class="opts pred">${LAB.map(l=>`<button class="opt" data-id="${l.id}">${matChar(l.sw)}${l.name}</button>`).join('')}</div><p class="pmsg"></p></div>
+   <div class="lab-sec test hidden"><h3>🧪 Test and 🔍 observe – pour water on each one!</h3>
+     <div class="rigs">${LAB.map(l=>`<div class="rig ${l.dry?'repel':'leak'}" data-id="${l.id}"><div class="air">${makeDrops(5).replace('class="drops"','class="drops" style="z-index:1"')}<div class="sheet sw-${l.sw}"></div><div class="tdy">${ico('teddy')}</div></div><b>${l.name}</b><div class="row-btns" style="margin:6px 0"><button class="btn orange pour">💧 Pour water</button></div><p class="rr"></p></div>`).join('')}</div></div>
+   <div class="lab-sec rec-sec hidden"><h3>📝 Record the results</h3><table class="rec"><tr><th>Material</th><th>Did Teddy stay dry?</th></tr>${LAB.map(l=>`<tr data-id="${l.id}"><td>${l.name}</td><td class="rv">…</td></tr>`).join('')}</table></div>
+   <div class="lab-sec conc hidden"><h3>📣 Conclude – what did we find out?</h3><div class="qb"></div><p class="eval big-say"></p></div>`;
+  const enq = n => { for(let k=2;k<=6;k++){ const e=$('.e'+k,b); if(e) e.classList.toggle('on', k<=n); } };
+  $$('.pred .opt',b).forEach(o => o.onclick = () => { pred=o.dataset.id; $$('.pred .opt',b).forEach(x=>x.classList.toggle('right', x===o)); sfx.pop();
+    $('.pmsg',b).innerHTML = `Good thinking! You predicted <b>${LAB.find(l=>l.id===pred).name}</b>. Now let's test it! 👇`; $('.test',b).classList.remove('hidden'); enq(3); });
+  $$('.rig',b).forEach(r => { $('.pour',r).onclick = () => {
+    const L=LAB.find(l=>l.id===r.dataset.id); r.classList.remove('wet','dry'); $('.rr',r).textContent='';
+    r.classList.remove('go'); void r.offsetWidth; r.classList.add('go'); sfx.whoosh();
+    setTimeout(() => { r.classList.add(L.dry?'dry':'wet'); $('.rr',r).textContent=L.res; tested[L.id]=true; enq(5);
+      $('.rec-sec',b).classList.remove('hidden'); $(`tr[data-id="${L.id}"] .rv`,b).innerHTML = L.dry?'✅ Yes – dry!':'❌ No – wet!';
+      if(Object.keys(tested).length===LAB.length && $('.conc',b).classList.contains('hidden')){
+        $('.conc',b).classList.remove('hidden'); enq(6);
+        mcq($('.qb',b), {q:'Which material kept Teddy dry?', opts:LAB.map(l=>({t:l.name, pic:'mat:'+l.sw, ok:l.dry, why:`Look at your results table. Did Teddy stay dry under the ${l.name.toLowerCase()}?`})),
+          explain:'Plastic is <b>WATERPROOF</b>, so the water cannot get through. It would make a great umbrella!',
+          onCorrect(){ $('.eval',b).innerHTML = pred==='plastic' ? 'Your prediction was right! 🎉 Super scientist!' : 'Your prediction was different – and that is OK! Scientists test their ideas and learn something new. 🔬'; complete('p4-lab'); }});
+      }
+    }, 2000);
+  }; });
+ },
+ teach:{ask:'Was it a fair test? What did we keep the same?', expect:'We used the same amount of water and the same teddy each time.', struggle:'Talk through each enquiry step: ask, predict, test, observe, record, conclude.', demo:'Do it for real: stretch kitchen roll, a cotton cloth and a plastic bag over three cups, put a small toy or paper "teddy" in each, and spoon on the same amount of water. Record the results in a table.'}},
+
+/* ---------------- PART 5: QUIZ ---------------- */
+{id:'p5-quiz', ch:5, gate:true, title:'The Science Challenge',
+ say:"It's time for the Science Challenge! Answer each question. Don't worry – just try your best!",
+ render(b){ renderQuiz(b); },
+ teach:{ask:'Talk about each answer: "How did you know?"', expect:'The child explains using the words object, material and property words.', struggle:'Use "Review My Mistakes" at the end – each question shows a helpful explanation.', demo:'Have the real objects nearby so the child can touch and check while answering.'}},
+
+/* ---------------- CERTIFICATE ---------------- */
+{id:'cert', ch:6, title:'Your Little Scientist Certificate',
+ say:"Congratulations, Little Scientist! You finished the Everyday Materials Science Adventure!",
+ render(b){
+  const q=S.quiz, pct = q && q.finished ? Math.round(q.answers.filter(a=>a.ok).length/QUIZ.length*100) : null;
+  const date = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  b.innerHTML = `<div class="name-box"><label for="cn" style="font-weight:600">Write your name on the certificate:</label><input id="cn" maxlength="24" value="${esc(S.name)}" placeholder="Your name"></div>
+   <div class="cert" id="certificate">
+     <span class="corner" style="left:12px;top:8px">⭐</span><span class="corner" style="right:12px;top:8px">🔬</span>
+     <span class="corner" style="left:12px;bottom:8px">🧪</span><span class="corner" style="right:12px;bottom:8px">⭐</span>
+     <div class="cm">${MASCOT}</div>
+     <p class="c1">THIS CERTIFICATE IS AWARDED TO</p>
+     <div class="cname" id="cname">${esc(S.name)||'&nbsp;'}</div>
+     <p class="ctitle">LITTLE SCIENCE EXPLORER</p>
+     <p class="cfor">For completing the <b>Everyday Materials Science Adventure!</b></p>
+     <div class="cb">${Object.keys(BADGES).map(k=>badgeHTML(k, !S.badges.includes(k))).join('')}</div>
+     <div class="cfoot"><span>⭐ Stars collected: <b>${S.stars}</b></span>${pct!==null?`<span>🏆 Science Challenge: <b>${pct}%</b></span>`:''}<span>📅 ${date}</span><span>Signed: Professor Pip 🔬</span></div>
+   </div>
+   <div class="row-btns"><button class="btn primary big pr">🖨️ Print my certificate</button><button class="btn ghost rs">↺ Start the adventure again</button></div>`;
+  $('#cn',b).addEventListener('input', e => { S.name=e.target.value.trim().slice(0,24); save(); $('#cname',b).innerHTML = esc(S.name)||'&nbsp;'; });
+  $('.pr',b).onclick = () => window.print();
+  $('.rs',b).onclick = askRestart;
+  confetti(90); sfx.win();
+ },
+ teach:{ask:'What was your favourite thing you learned today?', expect:'Any answer! Celebrate their effort.', extra:'Watch & Learn (from the booklet, needs internet): <a href="https://www.youtube.com/watch?v=340MmuY_osY" target="_blank" rel="noopener">Materials and Their Properties</a> · <a href="https://www.youtube.com/watch?v=2td5mfgf1OI" target="_blank" rel="noopener">Materials – Science for Kids</a> · <a href="https://www.youtube.com/watch?v=Qxdg3SExBvk" target="_blank" rel="noopener">Sing Along Song: Everyday Materials</a> · <a href="https://www.youtube.com/watch?v=C4UlCEMlo9k" target="_blank" rel="noopener">Year 1 – Materials and their Properties</a>'}}
+];
+
+/* ---------- Material Explorer modal ---------- */
+function openMat(m, onClose){
+  const M = MATS[m];
+  if(!S.explored.includes(m)){ S.explored.push(m); save(); addStars(1); }
+  const modal = openModal(`<div class="m-head">${matChar(m,'lg')}<div><h2>${M.name}</h2><span class="pill soft">Material ${MAT_ORDER.indexOf(m)+1} of 6</span></div></div>
+    <div class="m-sec"><h3>🌍 Where does it come from?</h3><div class="from"><span class="ico-s">${ico(M.fromIc)}</span><p>${M.from}</p></div></div>
+    <div class="m-sec"><h3>👀 Look! Things made from ${M.name.toLowerCase()}:</h3><div class="ex-grid">${M.ex.map(e=>`<div class="ex">${icoS(e[0])}${e[1]}</div>`).join('')}</div></div>
+    <div class="m-sec"><h3>🕵️ What is it like?</h3><div class="chips">${M.props.map(p=>`<span class="chip">${p}</span>`).join('')}</div></div>
+    <div class="m-sec"><h3>🛠️ What is it used for?</h3><p>${M.uses}</p></div>
+    ${M.demo?`<div class="m-sec"><h3>🧪 Try it!</h3><div class="mdemo"></div></div>`:''}
+    ${M.safety?`<div class="safety">⚠️ ${M.safety}</div>`:''}
+    <div class="m-sec fact">⭐ <b>Fun fact:</b> ${M.fact}</div>
+    <div class="m-sec soft-card"><b>🔍 Little Scientist question:</b> ${M.ask}<div class="row-btns" style="justify-content:flex-start;margin:8px 0 0"><button class="btn green yes">Yes! 🙋</button><button class="btn ghost no">Not yet</button></div><p class="ans"></p></div>
+    <div class="row-btns"><button class="btn primary big" data-close>Got it! ✓</button></div>`, onClose);
+  $('.yes',modal).onclick = () => { $('.ans',modal).textContent='Brilliant exploring! 🌟'; sfx.good(); };
+  $('.no',modal).onclick = () => { $('.ans',modal).textContent="That's OK! Have a look around later. 🔍"; };
+  if(M.demo==='screen') DEMOS.screen($('.mdemo',modal), {panels:[{kind:'glass',label:'the glass window',see:true}]}, ()=>{});
+  if(M.demo==='soak') DEMOS.soak($('.mdemo',modal), {items:[{ic:'towel',label:'Fabric towel',absorb:true,res:'The towel soaked up the water!'}]}, ()=>{});
+  if(S.voice) speak(`${M.name}. ${M.from} ${M.fact}`);
+}
+
+/* ---------- Quiz engine ---------- */
+function renderQuiz(b){
+  if(!S.quiz || !Array.isArray(S.quiz.answers)) { S.quiz = {i:0, answers:[], finished:false}; save(); }
+  const q = S.quiz;
+  if(q.finished) return renderResults(b);
+  const i = Math.min(q.i, QUIZ.length-1), Q = QUIZ[i];
+  const opts = Q.keep ? Q.opts : shuffle(Q.opts);
+  const score = q.answers.filter(a=>a.ok).length;
+  b.innerHTML = `<div class="quiz"><div class="qbar"><span>Question ${i+1} of ${QUIZ.length}</span><span>⭐ ${score} correct</span></div>
+    <div class="qprog"><i style="width:${i/QUIZ.length*100}%"></i></div>
+    <span class="pill soft">${Q.type}</span>
+    ${Q.pic?`<div class="hero-pic sm" style="display:grid;place-items:center">${Q.pic.indexOf('mat:')===0?matChar(Q.pic.slice(4),'lg'):ico(Q.pic)}</div>`:''}
+    <h2 class="qq">${Q.q}</h2>
+    <div class="opts">${opts.map((o,k)=>`<button class="opt" data-k="${k}">${o.pic?`<span class="opt-pic">${pic(o.pic)}</span>`:''}<span>${o.t}</span></button>`).join('')}</div>
+    <div class="fb"></div><div class="row-btns nx"></div></div>`;
+  if(S.voice) speak(Q.q);
+  $$('.opt',b).forEach(btn => btn.onclick = () => {
+    const o = opts[+btn.dataset.k], ok = !!o.ok;
+    $$('.opt',b).forEach(x=>x.disabled=true);
+    q.answers = q.answers.filter(a=>a.qi!==i); q.answers.push({qi:i, ok});
+    const fb=$('.fb',b);
+    if(ok){ btn.classList.add('right'); sfx.good(); addStars(1,btn); fb.className='fb good'; fb.innerHTML=`<b>${praise()} 🎉</b>${Q.why}`; }
+    else { btn.classList.add('wrong'); sfx.bad(); $$('.opt',b).forEach((x,k)=>{ if(opts[k].ok) x.classList.add('right'); });
+      fb.className='fb try'; fb.innerHTML=`<b>Good try! The answer is: ${opts.find(x=>x.ok).t}</b>${Q.why}`; }
+    if(S.voice) speak(Q.why);
+    const last = i===QUIZ.length-1;
+    q.i = i+1; if(last) q.finished = true; save();
+    const nx=$('.nx',b); nx.innerHTML = `<button class="btn primary big">${last?'See my results 🏆':'Next question ▶'}</button>`;
+    nx.firstChild.onclick = () => { if(last){ giveBadge('star'); complete('p5-quiz'); } renderQuiz(b); window.scrollTo({top:0,behavior:'smooth'}); };
+  });
+}
+function renderResults(b){
+  const q=S.quiz, total=QUIZ.length, right=q.answers.filter(a=>a.ok).length, wrong=total-right, pct=Math.round(right/total*100);
+  const [icon, level, msg] = quizLevel(pct);
+  const mistakes = q.answers.filter(a=>!a.ok).map(a=>a.qi);
+  b.innerHTML = `<div class="results"><div class="trophy">${icon}</div><p class="level">${level}</p><p style="font-size:22px">${msg}</p>
+    <div class="res-grid"><div><b>${total}</b>Questions</div><div><b style="color:var(--green)">${right}</b>Correct</div><div><b style="color:var(--try)">${wrong}</b>To practise</div><div><b>${pct}%</b>Score</div></div>
+    <div class="row-btns">${mistakes.length?'<button class="btn orange big rv">🔁 Review my mistakes</button>':'<p class="big-say">No mistakes at all! 🌟</p>'}<button class="btn ghost again">Try the whole quiz again</button></div>
+    <div class="review"></div></div>`;
+  if(pct>=70) confetti(70);
+  complete('p5-quiz'); if(!S.badges.includes('star')) giveBadge('star');
+  const rv=$('.rv',b);
+  if(rv) rv.onclick = () => reviewMistakes($('.review',b), mistakes);
+  $('.again',b).onclick = () => { S.quiz={i:0,answers:[],finished:false}; save(); renderQuiz(b); };
+}
+function reviewMistakes(box, list){
+  let k=0;
+  const show = () => {
+    if(k>=list.length){ box.innerHTML = `<p class="big-say pop-in">You practised them all! Well done! 🌟</p>`; sfx.win(); return; }
+    const Q = QUIZ[list[k]];
+    box.innerHTML = `<div class="card" style="margin-top:14px"><p class="qnum">Practice ${k+1} of ${list.length}</p>${Q.pic?`<div class="hero-pic sm" style="display:grid;place-items:center">${Q.pic.indexOf('mat:')===0?matChar(Q.pic.slice(4),'lg'):ico(Q.pic)}</div>`:''}<div class="qb"></div><div class="row-btns nx"></div></div>`;
+    mcq($('.qb',box), {q:Q.q, keepOrder:Q.keep, opts:Q.opts.map(o=>({t:o.t,pic:o.pic,ok:!!o.ok})), explain:Q.why, hint:'Think about what we learned. You can do it!',
+      onCorrect(){ const nx=$('.nx',box); nx.innerHTML='<button class="btn primary">Next ▶</button>'; nx.firstChild.onclick=()=>{k++; show();}; }});
+    box.scrollIntoView({behavior:'smooth', block:'start'});
+  };
+  show();
+}
+
+/* =========================================================
+   10. ENGINE – rendering, navigation, progress
+   ========================================================= */
+const stage = $('#stage');
+if(S.step<0 || S.step>=STEPS.length) S.step=0;
+if(S.max<S.step) S.max=S.step;
+if(S.max>=STEPS.length) S.max=STEPS.length-1;
+
+function render(){
+  const st = STEPS[S.step], ch = CHAPTERS[st.ch];
+  if('speechSynthesis' in window) try{ speechSynthesis.cancel(); }catch(e){}
+  closeModal();
+  stage.innerHTML = `<section class="step">
+    ${st.ch>0?`<div class="step-top"><span class="pill" style="--c:${ch.color}">${ch.icon} ${ch.name}</span>${st.tag?`<span class="pill soft">${st.tag}</span>`:''}</div>`:''}
+    ${st.title?`<h1 class="title" tabindex="-1">${st.title}</h1>`:''}
+    ${st.say?`<div class="guide"><div class="g-mascot">${MASCOT}</div><div class="bubble"><p>${st.say}</p><button class="read" aria-label="Read aloud" title="Read aloud">🔊</button></div></div>`:''}
+    <div class="body"></div>
+    ${st.teach?teachHTML(st.teach):''}
+  </section>`;
+  const rd = $('.read', stage); if(rd) rd.onclick = () => speak(st.say);
+  if(!st.gate && !S.done[st.id]){ S.done[st.id]=true; save(); }
+  try { st.render($('.body', stage), st); }
+  catch(err){ console.error(err); $('.body',stage).innerHTML = '<p class="note">Oops! Something went wrong on this page. Please press Next or Back.</p>'; S.done[st.id]=true; }
+  updateNav(); updateHud();
+  window.scrollTo(0,0);
+  const t=$('.title',stage); if(t) t.focus({preventScroll:true});
+  if(S.voice && st.say) setTimeout(()=>speak(st.say), 300);
+}
+function complete(id){
+  const st = STEPS.find(s=>s.id===id);
+  if(S.done[id]){ updateNav(); return; }
+  S.done[id]=true; save(); updateNav();
+  if(st && st.badge) setTimeout(()=>giveBadge(st.badge), 900);
+  const nb=$('#next'); nb.classList.remove('pulse'); void nb.offsetWidth; nb.classList.add('pulse');
+}
+function canNext(){ const st=STEPS[S.step]; return !st.gate || !!S.done[st.id]; }
+function next(){
+  if(S.step>=STEPS.length-1) return;
+  if(!canNext()){ toast('Finish the activity on this page first, Little Scientist! 🔒'); const n=$('#next'); n.classList.add('shake'); setTimeout(()=>n.classList.remove('shake'),500); return; }
+  S.step++; if(S.step>S.max) S.max=S.step; save(); sfx.whoosh(); render();
+}
+function prev(){ if(S.step>0){ S.step--; save(); render(); } }
+function goTo(i){ if(i>=0 && i<=S.max && i<STEPS.length){ S.step=i; save(); render(); } }
+function updateNav(){
+  const st=STEPS[S.step], ok=canNext(), last=S.step===STEPS.length-1;
+  const pb=$('#prev'), nb=$('#next');
+  pb.disabled = S.step===0;
+  nb.style.visibility = last ? 'hidden' : 'visible';
+  nb.classList.toggle('locked', !ok);
+  nb.setAttribute('aria-disabled', String(!ok));
+  nb.innerHTML = ok ? (S.step===0 ? 'Start ▶' : 'Next ▶') : '🔒 Next';
+  $('#dots').innerHTML = CHAPTERS.map((c,i)=>{
+    const first=STEPS.findIndex(s=>s.ch===i), steps=STEPS.filter(s=>s.ch===i);
+    const done = steps.every(s=>S.done[s.id]);
+    return `<button class="dot ${st.ch===i?'cur':''} ${done&&st.ch!==i?'done':''}" data-to="${first}" ${first<=S.max?'':'disabled'} title="${c.short}" aria-label="${c.name}">${c.icon}</button>`;
+  }).join('');
+  $$('#dots .dot').forEach(d => d.onclick = () => goTo(+d.dataset.to));
+  const pct = S.step/(STEPS.length-1)*100;
+  $('#progFill').style.width = pct+'%'; $('#progRocket').style.left = Math.max(2, Math.min(98, pct))+'%';
+  $('#progText').textContent = `${CHAPTERS[st.ch].name} · Step ${S.step+1} of ${STEPS.length}`;
+}
+function updateHud(){
+  $('#starNum').textContent=S.stars; $('#badgeNum').textContent=S.badges.length;
+  $('#soundBtn').setAttribute('aria-pressed', String(S.sound)); $('#soundBtn').textContent = S.sound?'🔊':'🔇';
+  $('#voiceBtn').setAttribute('aria-pressed', String(S.voice));
+}
+function askRestart(){
+  const m = openModal(`<div class="center"><div style="font-size:60px">🔄</div><h2>Start the whole adventure again?</h2><p>Your stars, badges and answers will be cleared.</p>
+    <div class="row-btns"><button class="btn orange big yes">Yes, start again</button><button class="btn ghost big" data-close>No, keep going</button></div></div>`);
+  $('.yes',m).onclick = () => { const keep={sound:S.sound, voice:S.voice}; S=Object.assign(fresh(), keep); save(); closeModal(); render(); toast('A brand new adventure! 🚀'); };
+}
+
+/* ---------- Top bar + keyboard ---------- */
+$('#brandM').innerHTML = MASCOT;
+$('#prev').onclick = prev;
+$('#next').onclick = next;
+$('#soundBtn').onclick = () => { S.sound=!S.sound; save(); updateHud(); if(S.sound) sfx.pop(); };
+$('#voiceBtn').onclick = () => { S.voice=!S.voice; save(); updateHud(); toast(S.voice?'I will read every page aloud 🗣️':'Reading aloud is off'); if(S.voice){ const st=STEPS[S.step]; speak(st.say||'Welcome to the Everyday Materials Science Adventure!'); } else try{speechSynthesis.cancel();}catch(e){} };
+$('#restartBtn').onclick = askRestart;
+$('#starsBtn').onclick = () => toast(`You have collected ${S.stars} stars! ⭐ Keep going!`);
+$('#badgeBtn').onclick = () => openModal(`<h2 class="center" style="color:var(--primary)">🏅 My Badges</h2><p class="center">You have ${S.badges.length} of ${Object.keys(BADGES).length} badges.</p><div class="shelf">${Object.keys(BADGES).map(k=>badgeHTML(k, !S.badges.includes(k))).join('')}</div><div class="row-btns"><button class="btn primary" data-close>Close</button></div>`);
+document.addEventListener('keydown', e => {
+  if(e.key==='Escape'){ const o=$('#overlay'); if(o && o._close) o._close(); return; }
+  if($('#overlay')) return;
+  const tag = (document.activeElement && document.activeElement.tagName) || '';
+  if(/INPUT|TEXTAREA|SELECT/.test(tag)) return;
+  if(e.key==='ArrowRight') next(); if(e.key==='ArrowLeft') prev();
+});
+if('speechSynthesis' in window) try{ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = ()=>{}; }catch(e){}
+
+render();
+</script>
+</body>
+</html>
